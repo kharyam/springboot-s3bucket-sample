@@ -26,9 +26,6 @@ public class BucketListerApplication implements CommandLineRunner{
 
   @Override
   public void run(String... args) throws Exception {
-      System.out.println("Khary was here");
-      System.out.println("XXXXXXXXXX: " + accessKey);
-      System.out.flush();
   }
 
 }
