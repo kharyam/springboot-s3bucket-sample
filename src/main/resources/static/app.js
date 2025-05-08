@@ -16,9 +16,28 @@ const state = {
     currentPath: ""
 };
 
-// Wait for DOM to be loaded
+let appConfig = {
+    readOnlyMode: false
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     log('DOM content loaded, initializing app');
+    
+    // Fetch application config first
+    try {
+        const response = await fetch('/api/config');
+        if (response.ok) {
+            appConfig = await response.json();
+            log('Loaded app config:', appConfig);
+            
+            // Apply read-only mode if enabled
+            if (appConfig.readOnlyMode) {
+                applyReadOnlyMode();
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load app config:', err);
+    }
     
     // Set up event listeners
     setupEventListeners();
@@ -27,6 +46,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadFiles();
 });
 
+function applyReadOnlyMode() {
+    log('Applying read-only mode to UI');
+    
+    // Hide or disable upload and delete buttons in the main UI
+    const uploadBtn = document.getElementById('upload-btn');
+    if (uploadBtn) {
+        uploadBtn.style.display = 'none';
+    }
+    
+    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+    if (deleteSelectedBtn) {
+        deleteSelectedBtn.style.display = 'none';
+    }
+    
+    // Also update the renderFiles function to not include delete buttons
+    // This is done by modifying the original renderFiles function below
+}
+
 function setupEventListeners() {
     // Add event listener for refresh button
     const refreshBtn = document.getElementById('refresh-btn');
@@ -34,18 +71,27 @@ function setupEventListeners() {
         refreshBtn.addEventListener('click', loadFiles);
     }
     
-    // Add event listener for upload button
-    const uploadBtn = document.getElementById('upload-btn');
-    if (uploadBtn) {
-        uploadBtn.addEventListener('click', openUploadModal);
+    // Only set up upload in non-read-only mode
+    if (!appConfig.readOnlyMode) {
+        // Add event listener for upload button
+        const uploadBtn = document.getElementById('upload-btn');
+        if (uploadBtn) {
+            uploadBtn.addEventListener('click', openUploadModal);
+        }
+        
+        // Add event listener for delete selected button
+        const deleteSelectedBtn = document.getElementById('delete-selected-btn');
+        if (deleteSelectedBtn) {
+            deleteSelectedBtn.addEventListener('click', deleteSelectedFiles);
+        }
+        
+        // Add event listener for upload form
+        const uploadForm = document.getElementById('upload-form');
+        if (uploadForm) {
+            uploadForm.addEventListener('submit', handleFormUpload);
+        }
     }
-    
-    // Add event listener for delete selected button
-    const deleteSelectedBtn = document.getElementById('delete-selected-btn');
-    if (deleteSelectedBtn) {
-        deleteSelectedBtn.addEventListener('click', deleteSelectedFiles);
-    }
-    
+
     // Add event listener for search input
     const searchInput = document.getElementById('search-input');
     if (searchInput) {
@@ -68,12 +114,6 @@ function setupEventListeners() {
             if (uploadModal) uploadModal.style.display = 'none';
         });
     });
-    
-    // Add event listener for upload form
-    const uploadForm = document.getElementById('upload-form');
-    if (uploadForm) {
-        uploadForm.addEventListener('submit', handleFormUpload);
-    }
     
     log('Event listeners set up');
 }
@@ -346,7 +386,9 @@ function renderFiles() {
         return `
             <div class="file-item ${isSelected ? 'selected' : ''}" data-key="${file.key}">
                 <div class="checkbox-cell">
-                    ${!file.isFolder ? `<input type="checkbox" class="file-checkbox" ${isSelected ? 'checked' : ''}>` : '<span></span>'}
+                    ${!file.isFolder && !appConfig.readOnlyMode ? 
+                      `<input type="checkbox" class="file-checkbox" ${isSelected ? 'checked' : ''}>` : 
+                      '<span></span>'}
                 </div>
                 <div class="filename-cell">
                     <i class="file-icon fas ${file.isFolder ? 'fa-folder folder-icon' : getFileIcon(file.name)}"></i>
@@ -365,9 +407,11 @@ function renderFiles() {
                                 <i class="fas fa-eye"></i>
                             </button>
                         ` : ''}
-                        <button class="action-btn delete delete-btn" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
+                        ${!appConfig.readOnlyMode ? `
+                            <button class="action-btn delete delete-btn" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        ` : ''}
                     `}
                 </div>
             </div>
