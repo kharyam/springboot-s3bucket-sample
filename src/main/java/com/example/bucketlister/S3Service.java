@@ -23,8 +23,12 @@ import software.amazon.awssdk.services.s3.model.S3Object;
 import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.sync.RequestBody;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Service
 public class S3Service {
+    private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
 
     @Value("${bucket.access.key}")
     private String accessKey;
@@ -42,6 +46,8 @@ public class S3Service {
 
     @PostConstruct
     public void init() {
+        logger.info("Initializing S3 client with endpoint: {}", endpoint);
+        
         var creds = AwsBasicCredentials.create(accessKey, secretKey);
         String region = "us-east-1"; // Not applicable for ocp, default it.
         this.s3Client = S3Client.builder()
@@ -50,9 +56,12 @@ public class S3Service {
                 .credentialsProvider(StaticCredentialsProvider.create(creds))
                 .forcePathStyle(true) // Required for OpenShift ODF
                 .build();
+        
+        logger.info("S3 client initialized successfully");
     }
 
     public List<String> listBucketContents() {
+        logger.debug("Listing contents of bucket: {}", bucketName);
         ArrayList<String> result = new ArrayList<String>();
 
         try {
@@ -66,35 +75,49 @@ public class S3Service {
                 result.add(object.key());
             }
 
+            logger.debug("Found {} objects in bucket", result.size());
         } catch (Exception e) {
-            System.err.println("Failed to list objects: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Failed to list objects: {}", e.getMessage(), e);
         }
 
         return result;
     }
 
     public byte[] downloadFile(String key) throws Exception {
+        logger.debug("Downloading file with key: {}", key);
+        
         // Build the GetObjectRequest to fetch the file
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(key)
                 .build();
 
-        // Get the object from the S3 bucket as InputStream
-        ResponseInputStream<GetObjectResponse> s3ObjectInputStream = s3Client.getObject(getObjectRequest);
-
-        // Read the InputStream into a byte array
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        byte[] buffer = new byte[1024];
-        int length;
-        while ((length = s3ObjectInputStream.read(buffer)) > -1) {
-            byteArrayOutputStream.write(buffer, 0, length);
+        try {
+            // Get the object from the S3 bucket as InputStream
+            ResponseInputStream<GetObjectResponse> s3ObjectInputStream = s3Client.getObject(getObjectRequest);
+            
+            // Read the InputStream into a byte array
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = s3ObjectInputStream.read(buffer)) > -1) {
+                byteArrayOutputStream.write(buffer, 0, length);
+            }
+            
+            byte[] result = byteArrayOutputStream.toByteArray();
+            logger.debug("Successfully downloaded file with key: {}, size: {} bytes", key, result.length);
+            
+            return result;
+        } catch (Exception e) {
+            logger.error("Failed to download file with key {}: {}", key, e.getMessage(), e);
+            throw e;
         }
-        return byteArrayOutputStream.toByteArray();
     }
 
     public void uploadFile(String key, byte[] fileContent, String contentType) {
+        logger.debug("Uploading file with key: {}, size: {} bytes, content-type: {}", 
+                key, fileContent.length, contentType);
+        
         try {
             // Create request
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -107,13 +130,16 @@ public class S3Service {
             s3Client.putObject(putObjectRequest,
                     RequestBody.fromInputStream(new ByteArrayInputStream(fileContent), fileContent.length));
 
+            logger.debug("Successfully uploaded file with key: {}", key);
         } catch (Exception e) {
-            System.err.println("Failed to upload file: " + e.getMessage());
+            logger.error("Failed to upload file with key {}: {}", key, e.getMessage(), e);
             throw new RuntimeException("Failed to upload file", e);
         }
     }
 
     public void deleteFile(String key) {
+        logger.debug("Deleting file with key: {}", key);
+        
         try {
             // Create delete request
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
@@ -124,8 +150,9 @@ public class S3Service {
             // Delete from S3
             s3Client.deleteObject(deleteObjectRequest);
 
+            logger.debug("Successfully deleted file with key: {}", key);
         } catch (Exception e) {
-            System.err.println("Failed to delete file: " + e.getMessage());
+            logger.error("Failed to delete file with key {}: {}", key, e.getMessage(), e);
             throw new RuntimeException("Failed to delete file", e);
         }
     }

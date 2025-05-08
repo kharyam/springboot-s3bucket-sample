@@ -528,7 +528,7 @@ function toggleSelectAll(e) {
 function downloadFile(key) {
     log('Downloading file:', key);
     const link = document.createElement('a');
-    link.href = `/bucket/download/${encodeURIComponent(key)}`;
+    link.href = `/bucket/download/${key}`;
     link.download = key.split('/').pop();
     document.body.appendChild(link);
     link.click();
@@ -555,7 +555,7 @@ async function previewFile(key) {
         previewTitle.textContent = key.split('/').pop();
 
         log('Fetching file for preview:', key);
-        const response = await fetch(`/bucket/download/${encodeURIComponent(key)}`);
+        const response = await fetch(`/bucket/download/${key}`);
 
         if (!response.ok) {
             log('Preview fetch failed:', response.status, response.statusText);
@@ -617,7 +617,7 @@ async function deleteFile(key) {
     }
 
     try {
-        const response = await fetch(`/bucket/delete/${encodeURIComponent(key)}`, {
+        const response = await fetch(`/bucket/delete/${key}`, {
             method: 'DELETE'
         });
 
@@ -647,7 +647,7 @@ async function deleteSelectedFiles() {
     try {
         // Create an array of promises for each file deletion
         const deletePromises = Array.from(state.selectedFiles).map(key =>
-            fetch(`/bucket/delete/${encodeURIComponent(key)}`, {
+            fetch(`/bucket/delete/${key}`, {
                 method: 'DELETE'
             })
         );

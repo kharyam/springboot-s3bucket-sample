@@ -7,6 +7,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,9 +19,13 @@ import org.springframework.http.HttpHeaders;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 public class BucketController {
-
+    private static final Logger logger = LoggerFactory.getLogger(BucketController.class);
+    
     private final S3Service s3Service;
 
     @Autowired
@@ -29,37 +36,44 @@ public class BucketController {
     @GetMapping("/bucket/list")
     public ResponseEntity<List<String>> getObjects() {
         try {
-            System.out.println("Received request to list bucket contents");
+            logger.info("Received request to list bucket contents");
             var result = s3Service.listBucketContents();
-            System.out.println("Found " + result.size() + " objects in bucket");
+            logger.info("Found {} objects in bucket", result.size());
+            
             HttpHeaders headers = new HttpHeaders();
             headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
             return ResponseEntity.ok()
                 .headers(headers)
                 .body(result);
         } catch (Exception e) {
-            System.err.println("Error listing bucket contents: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error listing bucket contents: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(null);
         }
     }
 
-    @GetMapping("/bucket/download/{key}")
-    public ResponseEntity<byte[]> downloadFile(@PathVariable String key) {
+    //@GetMapping("/bucket/download/{key:.*}")
+    @GetMapping("/bucket/download/**")
+    public ResponseEntity<byte[]> downloadFile(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String key = path.substring(path.indexOf("/bucket/download/") + "/bucket/download/".length());
         try {
-            System.out.println("Download request for key: " + key);
-
+            logger.info("Download request for key: {}", key);
+            
+            // URL decode the key in case it was double-encoded
+            String decodedKey = java.net.URLDecoder.decode(key, "UTF-8");
+            logger.debug("Decoded key: {}", decodedKey);
+            
             // Get the file as a byte array from S3
-            byte[] fileContent = s3Service.downloadFile(key);
+            byte[] fileContent = s3Service.downloadFile(decodedKey);
+            logger.debug("File downloaded, size: {} bytes", fileContent.length);
 
             // Determine content type based on file extension
-            String contentType = determineContentType(key);
-            System.out.println("Determined content type: " + contentType);
+            String contentType = determineContentType(decodedKey);
+            logger.debug("Determined content type: {}", contentType);
 
             // Set headers to indicate it's a file download
             HttpHeaders headers = new HttpHeaders();
-
-            // If downloading directly (with attachment header), browser will download instead of display
+            
             // For preview functionality, we don't include the Content-Disposition header
             // headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key.substring(key.lastIndexOf('/') + 1));
             headers.add(HttpHeaders.CONTENT_TYPE, contentType);
@@ -68,8 +82,7 @@ public class BucketController {
                     .headers(headers)
                     .body(fileContent);
         } catch (Exception e) {
-            System.err.println("Error downloading file: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error downloading file: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(("Error downloading file: " + e.getMessage()).getBytes());
         }
     }
@@ -79,40 +92,51 @@ public class BucketController {
                                             @RequestParam("key") String key) {
         try {
             // Get file content as byte array
-            System.out.println("Received file with size: " + file.getSize() + " and name: " + file.getName());
+            logger.info("Received file upload request - file size: {}, name: {}, key: {}", 
+                    file.getSize(), file.getOriginalFilename(), key);
+            
             byte[] fileContent = file.getBytes();
             String contentType = file.getContentType();
 
             // Upload to S3
             s3Service.uploadFile(key, fileContent, contentType);
 
-            System.out.println("Uploaded file successfully with key: " + key);
+            logger.info("Uploaded file successfully with key: {}", key);
             return ResponseEntity.ok("File uploaded successfully: " + key);
         } catch (IOException e) {
-            System.err.println("Error uploading file due to IO exception: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error uploading file due to IO exception: {}", e.getMessage(), e);
             return ResponseEntity.status(500)
                     .body("Error uploading file: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error uploading file: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error uploading file: {}", e.getMessage(), e);
             return ResponseEntity.status(500)
                     .body("Error uploading file: " + e.getMessage());
         }
     }
 
-    @DeleteMapping("/bucket/delete/{key}")
-    public ResponseEntity<String> deleteFile(@PathVariable String key) {
+
+    // @GetMapping("/bucket/download/**")
+    // public ResponseEntity<byte[]> downloadFile(HttpServletRequest request) {
+    //     String path = request.getRequestURI();
+    //     String key = path.substring(path.indexOf("/bucket/download/") + "/bucket/download/".length());
+
+    @DeleteMapping("/bucket/delete/**")
+    public ResponseEntity<String> deleteFile(HttpServletRequest request) {
+        String path = request.getRequestURI();
+        String key = path.substring(path.indexOf("/bucket/delete/") + "/bucket/delete/".length());
         try {
             // Delete from S3
-            System.out.println("Received request to delete file with key: " + key);
-            s3Service.deleteFile(key);
+            logger.info("Received request to delete file with key: {}", key);
+            
+            // URL decode the key in case it was double-encoded 
+            String decodedKey = java.net.URLDecoder.decode(key, "UTF-8");
+            
+            s3Service.deleteFile(decodedKey);
 
-            System.out.println("Deleted file successfully with key: " + key);
+            logger.info("Deleted file successfully with key: {}", key);
             return ResponseEntity.ok("File deleted successfully: " + key);
         } catch (Exception e) {
-            System.err.println("Error deleting file: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Error deleting file: {}", e.getMessage(), e);
             return ResponseEntity.status(500)
                     .body("Error deleting file: " + e.getMessage());
         }
@@ -120,7 +144,7 @@ public class BucketController {
 
     @GetMapping("/api/status")
     public ResponseEntity<Map<String, Object>> getStatus() {
-        System.out.println("API status check requested");
+        logger.info("API status check requested");
         Map<String, Object> status = new HashMap<>();
         status.put("status", "ok");
         status.put("timestamp", new java.util.Date().toString());
@@ -130,10 +154,9 @@ public class BucketController {
             List<String> bucketItems = s3Service.listBucketContents();
             status.put("bucketConnection", "ok");
             status.put("bucketItemCount", bucketItems.size());
-            System.out.println("API status: bucket connection successful, found " + bucketItems.size() + " items");
+            logger.info("API status: bucket connection successful, found {} items", bucketItems.size());
         } catch (Exception e) {
-            System.err.println("API status: bucket connection failed: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("API status: bucket connection failed: {}", e.getMessage(), e);
             status.put("bucketConnection", "error");
             status.put("bucketError", e.getMessage());
         }
