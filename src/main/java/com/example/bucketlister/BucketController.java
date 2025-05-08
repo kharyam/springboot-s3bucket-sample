@@ -1,36 +1,45 @@
 package com.example.bucketlister;
 
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.ResponseEntity;
-
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpHeaders;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class BucketController {
 
-    private final S3DownloadService s3DownloadService;
+    private final S3Service s3Service;
 
     @Autowired
-    public BucketController(S3DownloadService s3DownloadService) {
-        this.s3DownloadService = s3DownloadService;
+    public BucketController(S3Service s3Service) {
+        this.s3Service = s3Service;
     }
 
     @GetMapping("/bucket/list")
-    public ResponseEntity<List<String>> getObjects(){
-        try{
-            var result = s3DownloadService.listBucketContents();
+    public ResponseEntity<List<String>> getObjects() {
+        try {
+            System.out.println("Received request to list bucket contents");
+            var result = s3Service.listBucketContents();
+            System.out.println("Found " + result.size() + " objects in bucket");
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/text");
+            headers.add(HttpHeaders.CONTENT_TYPE, "application/json");
             return ResponseEntity.ok()
                 .headers(headers)
                 .body(result);
-
         } catch (Exception e) {
+            System.err.println("Error listing bucket contents: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body(null);
         }
     }
@@ -38,19 +47,133 @@ public class BucketController {
     @GetMapping("/bucket/download/{key}")
     public ResponseEntity<byte[]> downloadFile(@PathVariable String key) {
         try {
+            System.out.println("Download request for key: " + key);
+
             // Get the file as a byte array from S3
-            byte[] fileContent = s3DownloadService.downloadFile(key);
+            byte[] fileContent = s3Service.downloadFile(key);
+
+            // Determine content type based on file extension
+            String contentType = determineContentType(key);
+            System.out.println("Determined content type: " + contentType);
 
             // Set headers to indicate it's a file download
             HttpHeaders headers = new HttpHeaders();
-            headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key);
-            headers.add(HttpHeaders.CONTENT_TYPE, "application/octet-stream");
+
+            // If downloading directly (with attachment header), browser will download instead of display
+            // For preview functionality, we don't include the Content-Disposition header
+            // headers.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + key.substring(key.lastIndexOf('/') + 1));
+            headers.add(HttpHeaders.CONTENT_TYPE, contentType);
 
             return ResponseEntity.ok()
                     .headers(headers)
                     .body(fileContent);
         } catch (Exception e) {
+            System.err.println("Error downloading file: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(500).body(("Error downloading file: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @PostMapping("/bucket/upload")
+    public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file,
+                                            @RequestParam("key") String key) {
+        try {
+            // Get file content as byte array
+            System.out.println("Received file with size: " + file.getSize() + " and name: " + file.getName());
+            byte[] fileContent = file.getBytes();
+            String contentType = file.getContentType();
+
+            // Upload to S3
+            s3Service.uploadFile(key, fileContent, contentType);
+
+            System.out.println("Uploaded file successfully with key: " + key);
+            return ResponseEntity.ok("File uploaded successfully: " + key);
+        } catch (IOException e) {
+            System.err.println("Error uploading file due to IO exception: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body("Error uploading file: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("Error uploading file: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body("Error uploading file: " + e.getMessage());
+        }
+    }
+
+    @DeleteMapping("/bucket/delete/{key}")
+    public ResponseEntity<String> deleteFile(@PathVariable String key) {
+        try {
+            // Delete from S3
+            System.out.println("Received request to delete file with key: " + key);
+            s3Service.deleteFile(key);
+
+            System.out.println("Deleted file successfully with key: " + key);
+            return ResponseEntity.ok("File deleted successfully: " + key);
+        } catch (Exception e) {
+            System.err.println("Error deleting file: " + e.getMessage());
+            e.printStackTrace();
+            return ResponseEntity.status(500)
+                    .body("Error deleting file: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/api/status")
+    public ResponseEntity<Map<String, Object>> getStatus() {
+        System.out.println("API status check requested");
+        Map<String, Object> status = new HashMap<>();
+        status.put("status", "ok");
+        status.put("timestamp", new java.util.Date().toString());
+
+        try {
+            // Try to list bucket to see if S3 connection is working
+            List<String> bucketItems = s3Service.listBucketContents();
+            status.put("bucketConnection", "ok");
+            status.put("bucketItemCount", bucketItems.size());
+            System.out.println("API status: bucket connection successful, found " + bucketItems.size() + " items");
+        } catch (Exception e) {
+            System.err.println("API status: bucket connection failed: " + e.getMessage());
+            e.printStackTrace();
+            status.put("bucketConnection", "error");
+            status.put("bucketError", e.getMessage());
+        }
+
+        return ResponseEntity.ok(status);
+    }
+
+    private String determineContentType(String filename) {
+        String extension = "";
+        int i = filename.lastIndexOf('.');
+        if (i > 0) {
+            extension = filename.substring(i + 1).toLowerCase();
+}
+
+        switch (extension) {
+            // Text formats
+            case "txt": return "text/plain";
+            case "html": return "text/html";
+            case "css": return "text/css";
+            case "js": return "text/javascript";
+            case "json": return "application/json";
+            case "xml": return "application/xml";
+            case "csv": return "text/csv";
+            case "md": return "text/markdown";
+            // Image formats
+            case "jpg": case "jpeg": return "image/jpeg";
+            case "png": return "image/png";
+            case "gif": return "image/gif";
+            case "bmp": return "image/bmp";
+            case "svg": return "image/svg+xml";
+            // Document formats
+            case "pdf": return "application/pdf";
+            case "doc": case "docx": return "application/msword";
+            case "xls": case "xlsx": return "application/vnd.ms-excel";
+            case "ppt": case "pptx": return "application/vnd.ms-powerpoint";
+            // Archive formats
+            case "zip": return "application/zip";
+            case "rar": return "application/x-rar-compressed";
+            // Default
+            default: return "application/octet-stream";
         }
     }
 }

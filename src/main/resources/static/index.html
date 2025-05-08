@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S3 Bucket Explorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>S3 Bucket Explorer</h1>
+            <div class="breadcrumb-container">
+                <ol class="breadcrumb" id="breadcrumb">
+                    <li class="breadcrumb-item active" data-path="">Root</li>
+                </ol>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="button-group">
+                <button id="refresh-btn" class="btn primary"><i class="fas fa-sync-alt"></i> Refresh</button>
+                <button id="upload-btn" class="btn success"><i class="fas fa-upload"></i> Upload</button>
+                <button id="delete-selected-btn" class="btn danger" disabled><i class="fas fa-trash"></i> Delete Selected</button>
+            </div>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search files...">
+            </div>
+        </div>
+
+        <div class="content">
+            <div class="file-browser">
+                <div class="file-list-header">
+                    <div class="checkbox-cell">
+                        <input type="checkbox" id="select-all">
+                    </div>
+                    <div class="filename-cell">Name</div>
+                    <div class="filesize-cell">Size</div>
+                    <div class="actions-cell">Actions</div>
+                </div>
+                <div id="file-list" class="file-list">
+                    <!-- Files will be populated here -->
+                    <div class="loader" id="loader">Loading...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="preview-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="preview-title">File Preview</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="preview-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <div id="upload-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Upload Files</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="upload-form" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="file-input">Select Files</label>
+                        <input type="file" id="file-input" name="file" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="custom-key">Custom Key (optional)</label>
+                        <input type="text" id="custom-key" name="custom-key" placeholder="Leave blank to use filename">
+                        <small>Current path: <span id="current-path-display"></span></small>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn success">Upload</button>
+                    </div>
+                </form>
+                <div id="upload-progress" class="progress-bar-container" style="display: none;">
+                    <div class="progress-bar"></div>
+                    <div class="progress-text">0%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
