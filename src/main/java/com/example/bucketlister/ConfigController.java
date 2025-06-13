@@ -12,10 +12,18 @@ public class ConfigController {
     @Value("${app.readonly.mode:false}")
     private boolean readOnlyMode;
     
+    @Value("${bucket.host}")
+    private String bucketHost;
+    
+    @Value("${bucket.name}")
+    private String bucketName;
+    
     @GetMapping("/api/config")
     public Map<String, Object> getConfig() {
         Map<String, Object> config = new HashMap<>();
         config.put("readOnlyMode", readOnlyMode);
+        config.put("bucketHost", bucketHost);
+        config.put("bucketName", bucketName);
         return config;
     }
 }

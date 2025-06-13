@@ -17,7 +17,9 @@ const state = {
 };
 
 let appConfig = {
-    readOnlyMode: false
+    readOnlyMode: false,
+    bucketHost: '',
+    bucketName: ''
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -30,10 +32,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             appConfig = await response.json();
             log('Loaded app config:', appConfig);
             
+            // Update bucket info in the header
+            updateBucketInfo();
+            
             // Apply read-only mode if enabled
             if (appConfig.readOnlyMode) {
                 applyReadOnlyMode();
             }
+            
+            // Update mode indicator
+            updateModeIndicator();
         }
     } catch (err) {
         console.error('Failed to load app config:', err);
@@ -105,13 +113,18 @@ function setupEventListeners() {
     }
     
     // Add event listeners for modal close buttons
-    document.querySelectorAll('.modal .close').forEach(closeBtn => {
+    document.querySelectorAll('.close').forEach(closeBtn => {
         closeBtn.addEventListener('click', () => {
             const previewModal = document.getElementById('preview-modal');
             const uploadModal = document.getElementById('upload-modal');
+            const backdrop = document.querySelector('.pf-c-backdrop');
+            
+            // Remove modal class from body
+            document.body.classList.remove('pf-m-in-modal');
             
             if (previewModal) previewModal.style.display = 'none';
             if (uploadModal) uploadModal.style.display = 'none';
+            if (backdrop) backdrop.style.display = 'none';
         });
     });
     
@@ -125,7 +138,19 @@ async function loadFiles() {
     const loader = document.getElementById('loader');
     
     if (fileList) {
-        fileList.innerHTML = '<div class="loader" id="loader">Loading files...</div>';
+        fileList.innerHTML = `
+            <tr>
+                <td colspan="4">
+                    <div class="pf-l-bullseye">
+                        <div class="pf-c-spinner" role="progressbar" aria-label="Loading files">
+                            <span class="pf-c-spinner__clipper"></span>
+                            <span class="pf-c-spinner__lead-ball"></span>
+                            <span class="pf-c-spinner__tail-ball"></span>
+                        </div>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
     
     try {
@@ -153,11 +178,22 @@ async function loadFiles() {
         
         if (fileList) {
             fileList.innerHTML = `
-                <div class="empty-message">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <p>Error loading files: ${error.message}</p>
-                    <button class="btn primary" onclick="loadFiles()">Retry</button>
-                </div>
+                <tr>
+                    <td colspan="4">
+                        <div class="pf-c-empty-state">
+                            <div class="pf-c-empty-state__content">
+                                <i class="fas fa-exclamation-circle pf-c-empty-state__icon"></i>
+                                <h2 class="pf-c-title pf-m-lg">Error loading files</h2>
+                                <div class="pf-c-empty-state__body">
+                                    <p>${error.message}</p>
+                                </div>
+                                <div class="pf-c-empty-state__primary">
+                                    <button class="pf-c-button pf-m-primary" onclick="loadFiles()">Retry</button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
             `;
         }
     }
@@ -166,6 +202,7 @@ async function loadFiles() {
 // Open upload modal
 function openUploadModal() {
     const uploadModal = document.getElementById('upload-modal');
+    const backdrop = document.querySelector('.pf-c-backdrop');
     const currentPathDisplay = document.getElementById('current-path-display');
     const uploadForm = document.getElementById('upload-form');
     
@@ -177,8 +214,15 @@ function openUploadModal() {
         uploadForm.reset();
     }
     
+    // Add pf-m-in-modal class to body to prevent scrolling
+    document.body.classList.add('pf-m-in-modal');
+    
     if (uploadModal) {
         uploadModal.style.display = 'block';
+    }
+    
+    if (backdrop) {
+        backdrop.style.display = 'block';
     }
 }
 
@@ -189,9 +233,10 @@ function handleFormUpload(e) {
     const fileInput = document.getElementById('file-input');
     const customKeyInput = document.getElementById('custom-key');
     const uploadProgress = document.getElementById('upload-progress');
-    const progressBar = document.querySelector('.progress-bar');
-    const progressText = document.querySelector('.progress-text');
+    const progressBar = document.querySelector('.pf-c-progress__indicator');
+    const progressText = document.getElementById('progress-percentage');
     const uploadModal = document.getElementById('upload-modal');
+    const backdrop = document.querySelector('.pf-c-backdrop');
     
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         alert('Please select a file to upload');
@@ -218,6 +263,12 @@ function handleFormUpload(e) {
         uploadProgress.style.display = 'block';
         if (progressBar) progressBar.style.width = '0%';
         if (progressText) progressText.textContent = '0%';
+        
+        // Update ARIA value
+        const progressBarElement = document.querySelector('.pf-c-progress__bar');
+        if (progressBarElement) {
+            progressBarElement.setAttribute('aria-valuenow', '0');
+        }
     }
     
     // Create FormData
@@ -243,8 +294,18 @@ function handleFormUpload(e) {
         if (progressBar) progressBar.style.width = '100%';
         if (progressText) progressText.textContent = '100%';
         
+        // Update ARIA value
+        const progressBarElement = document.querySelector('.pf-c-progress__bar');
+        if (progressBarElement) {
+            progressBarElement.setAttribute('aria-valuenow', '100');
+        }
+        
         setTimeout(() => {
+            // Remove modal class from body
+            document.body.classList.remove('pf-m-in-modal');
+            
             if (uploadModal) uploadModal.style.display = 'none';
+            if (backdrop) backdrop.style.display = 'none';
             loadFiles(); // Refresh the file list
         }, 1000);
     })
@@ -359,10 +420,16 @@ function renderFiles() {
     
     if (state.organizedFiles.length === 0) {
         fileList.innerHTML = `
-            <div class="empty-message">
-                <i class="fas fa-folder-open"></i>
-                <p>This folder is empty</p>
-            </div>
+            <tr>
+                <td colspan="4">
+                    <div class="pf-c-empty-state">
+                        <div class="pf-c-empty-state__content">
+                            <i class="fas fa-folder-open pf-c-empty-state__icon"></i>
+                            <h2 class="pf-c-title pf-m-lg">This folder is empty</h2>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         `;
         log('No files to display');
         return;
@@ -372,10 +439,16 @@ function renderFiles() {
 
     if (filteredFiles.length === 0) {
         fileList.innerHTML = `
-            <div class="empty-message">
-                <i class="fas fa-search"></i>
-                <p>No files match your search</p>
-            </div>
+            <tr>
+                <td colspan="4">
+                    <div class="pf-c-empty-state">
+                        <div class="pf-c-empty-state__content">
+                            <i class="fas fa-search pf-c-empty-state__icon"></i>
+                            <h2 class="pf-c-title pf-m-lg">No files match your search</h2>
+                        </div>
+                    </div>
+                </td>
+            </tr>
         `;
         log('No files match search');
         return;
@@ -384,37 +457,41 @@ function renderFiles() {
     const html = filteredFiles.map(file => {
         const isSelected = state.selectedFiles.has(file.key);
         return `
-            <div class="file-item ${isSelected ? 'selected' : ''}" data-key="${file.key}">
-                <div class="checkbox-cell">
+            <tr class="${isSelected ? 'selected' : ''}" data-key="${file.key}">
+                <td class="pf-c-table__check">
                     ${!file.isFolder && !appConfig.readOnlyMode ? 
                       `<input type="checkbox" class="file-checkbox" ${isSelected ? 'checked' : ''}>` : 
                       '<span></span>'}
-                </div>
-                <div class="filename-cell">
-                    <i class="file-icon fas ${file.isFolder ? 'fa-folder folder-icon' : getFileIcon(file.name)}"></i>
-                    <span class="${file.isFolder ? 'folder-name' : 'file-name'}">${file.name}</span>
-                </div>
-                <div class="filesize-cell">
+                </td>
+                <td>
+                    <div class="pf-l-flex pf-m-align-items-center">
+                        <i class="file-icon fas ${file.isFolder ? 'fa-folder folder-icon' : getFileIcon(file.name)}"></i>
+                        <span class="${file.isFolder ? 'folder-name' : 'file-name'}">${file.name}</span>
+                    </div>
+                </td>
+                <td>
                     ${file.isFolder ? '' : formatFileSize(file.size)}
-                </div>
-                <div class="actions-cell">
-                    ${file.isFolder ? '' : `
-                        <button class="action-btn download-btn" title="Download">
-                            <i class="fas fa-download"></i>
-                        </button>
-                        ${isPreviewable(file.name) ? `
-                            <button class="action-btn preview-btn" title="Preview">
-                                <i class="fas fa-eye"></i>
+                </td>
+                <td>
+                    <div class="pf-l-flex pf-m-justify-content-flex-end pf-m-gap-sm">
+                        ${file.isFolder ? '' : `
+                            <button class="pf-c-button pf-m-plain action-btn download-btn" title="Download">
+                                <i class="fas fa-download"></i>
                             </button>
-                        ` : ''}
-                        ${!appConfig.readOnlyMode ? `
-                            <button class="action-btn delete delete-btn" title="Delete">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        ` : ''}
-                    `}
-                </div>
-            </div>
+                            ${isPreviewable(file.name) ? `
+                                <button class="pf-c-button pf-m-plain action-btn preview-btn" title="Preview">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            ` : ''}
+                            ${!appConfig.readOnlyMode ? `
+                                <button class="pf-c-button pf-m-plain action-btn delete delete-btn" title="Delete">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            ` : ''}
+                        `}
+                    </div>
+                </td>
+            </tr>
         `;
     }).join('');
 
@@ -430,13 +507,13 @@ function addFileItemEventListeners() {
     // File checkboxes
     document.querySelectorAll('.file-checkbox').forEach(checkbox => {
         checkbox.addEventListener('change', (e) => {
-            const fileItem = e.target.closest('.file-item');
+            const fileItem = e.target.closest('tr');
             const key = fileItem.dataset.key;
 
             if (e.target.checked) {
                 state.selectedFiles.add(key);
                 fileItem.classList.add('selected');
-  } else {
+            } else {
                 state.selectedFiles.delete(key);
                 fileItem.classList.remove('selected');
             }
@@ -448,7 +525,7 @@ function addFileItemEventListeners() {
     // Folder names
     document.querySelectorAll('.folder-name').forEach(folder => {
         folder.addEventListener('click', (e) => {
-            const fileItem = e.target.closest('.file-item');
+            const fileItem = e.target.closest('tr');
             const folderKey = fileItem.dataset.key;
             navigateToFolder(folderKey);
         });
@@ -457,7 +534,7 @@ function addFileItemEventListeners() {
     // Download buttons
     document.querySelectorAll('.download-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const fileItem = e.target.closest('.file-item');
+            const fileItem = e.target.closest('tr');
             const key = fileItem.dataset.key;
             downloadFile(key);
         });
@@ -466,7 +543,7 @@ function addFileItemEventListeners() {
     // Preview buttons
     document.querySelectorAll('.preview-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const fileItem = e.target.closest('.file-item');
+            const fileItem = e.target.closest('tr');
             const key = fileItem.dataset.key;
             previewFile(key);
         });
@@ -475,7 +552,7 @@ function addFileItemEventListeners() {
     // Delete buttons
     document.querySelectorAll('.delete-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
-            const fileItem = e.target.closest('.file-item');
+            const fileItem = e.target.closest('tr');
             const key = fileItem.dataset.key;
             deleteFile(key);
         });
@@ -495,8 +572,11 @@ function renderBreadcrumbs() {
     const html = state.breadcrumbs.map((crumb, index) => {
         const isActive = index === state.breadcrumbs.length - 1;
         return `
-            <li class="breadcrumb-item ${isActive ? 'active' : ''}" data-path="${crumb.path}">
-                ${isActive ? crumb.name : `<a href="javascript:void(0)">${crumb.name}</a>`}
+            <li class="pf-c-breadcrumb__item" data-path="${crumb.path}">
+                ${isActive ? 
+                    `<span class="pf-c-breadcrumb__item-text">${crumb.name}</span>` : 
+                    `<a href="javascript:void(0)" class="pf-c-breadcrumb__link">${crumb.name}</a>`
+                }
             </li>
         `;
     }).join('');
@@ -504,9 +584,9 @@ function renderBreadcrumbs() {
     breadcrumbElement.innerHTML = html;
     
     // Add event listeners to breadcrumb items
-    document.querySelectorAll('.breadcrumb-item:not(.active) a').forEach(item => {
+    document.querySelectorAll('.pf-c-breadcrumb__link').forEach(item => {
         item.addEventListener('click', (e) => {
-            const li = e.target.closest('.breadcrumb-item');
+            const li = e.target.closest('.pf-c-breadcrumb__item');
             const path = li.dataset.path;
             state.currentPath = path;
             loadFiles();
@@ -553,7 +633,7 @@ function toggleSelectAll(e) {
     
     document.querySelectorAll('.file-checkbox').forEach(checkbox => {
         checkbox.checked = isChecked;
-        const fileItem = checkbox.closest('.file-item');
+        const fileItem = checkbox.closest('tr');
         const key = fileItem.dataset.key;
         
         if (isChecked) {
@@ -583,6 +663,7 @@ function downloadFile(key) {
 async function previewFile(key) {
     log('Previewing file:', key);
     const previewModal = document.getElementById('preview-modal');
+    const backdrop = document.querySelector('.pf-c-backdrop');
     const previewContainer = document.getElementById('preview-container');
     const previewTitle = document.getElementById('preview-title');
 
@@ -593,8 +674,20 @@ async function previewFile(key) {
 
     try {
         // Show loading in preview container
-        previewContainer.innerHTML = '<div class="loader">Loading preview...</div>';
+        previewContainer.innerHTML = `
+            <div class="pf-l-bullseye">
+                <div class="pf-c-spinner" role="progressbar" aria-label="Loading preview">
+                    <span class="pf-c-spinner__clipper"></span>
+                    <span class="pf-c-spinner__lead-ball"></span>
+                    <span class="pf-c-spinner__tail-ball"></span>
+                </div>
+            </div>
+        `;
+        // Add pf-m-in-modal class to body to prevent scrolling
+        document.body.classList.add('pf-m-in-modal');
+        
         previewModal.style.display = 'block';
+        if (backdrop) backdrop.style.display = 'block';
 
         previewTitle.textContent = key.split('/').pop();
 
@@ -615,7 +708,7 @@ async function previewFile(key) {
             log('Previewing as image');
             const blob = await response.blob();
             const imageUrl = URL.createObjectURL(blob);
-            previewContainer.innerHTML = `<img src="${imageUrl}" alt="${key}">`;
+            previewContainer.innerHTML = `<img src="${imageUrl}" alt="${key}" class="pf-c-image">`;
         } else {
             // Try as text for anything that might be readable
             log('Trying to preview as text');
@@ -633,9 +726,14 @@ async function previewFile(key) {
             } catch (textError) {
                 log('Text preview failed:', textError);
                 previewContainer.innerHTML = `
-                    <div class="empty-message">
-                        <i class="fas fa-file"></i>
-                        <p>Preview not available for this file type or content</p>
+                    <div class="pf-c-empty-state">
+                        <div class="pf-c-empty-state__content">
+                            <i class="fas fa-file pf-c-empty-state__icon"></i>
+                            <h2 class="pf-c-title pf-m-lg">Preview not available</h2>
+                            <div class="pf-c-empty-state__body">
+                                <p>Preview not available for this file type or content</p>
+                            </div>
+                        </div>
                     </div>`;
             }
         }
@@ -643,10 +741,17 @@ async function previewFile(key) {
         console.error('Error previewing file:', error);
         if (previewContainer) {
             previewContainer.innerHTML = `
-                <div class="empty-message">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <p>Error: ${error.message}</p>
-                    <button class="btn primary" onclick="downloadFile('${key}')">Download Instead</button>
+                <div class="pf-c-empty-state">
+                    <div class="pf-c-empty-state__content">
+                        <i class="fas fa-exclamation-triangle pf-c-empty-state__icon"></i>
+                        <h2 class="pf-c-title pf-m-lg">Error</h2>
+                        <div class="pf-c-empty-state__body">
+                            <p>${error.message}</p>
+                        </div>
+                        <div class="pf-c-empty-state__primary">
+                            <button class="pf-c-button pf-m-primary" onclick="downloadFile('${key}')">Download Instead</button>
+                        </div>
+                    </div>
                 </div>
             `;
         }
@@ -792,4 +897,40 @@ function formatFileSize(size) {
     }
 
     return Math.round(size * 100) / 100 + ' ' + units[i];
+}
+
+// Update bucket info in the header
+function updateBucketInfo() {
+    const bucketInfoElement = document.getElementById('bucket-info');
+    if (bucketInfoElement && appConfig.bucketHost && appConfig.bucketName) {
+        bucketInfoElement.textContent = `${appConfig.bucketHost} / ${appConfig.bucketName}`;
+    }
+}
+
+// Update mode indicator
+function updateModeIndicator() {
+    const modeIndicator = document.getElementById('mode-indicator');
+    if (!modeIndicator) return;
+    
+    if (appConfig.readOnlyMode) {
+        modeIndicator.className = 'pf-c-label pf-m-orange pf-m-compact';
+        modeIndicator.innerHTML = `
+            <span class="pf-c-label__content">
+                <span class="pf-c-label__icon">
+                    <i class="fas fa-lock" aria-hidden="true"></i>
+                </span>
+                Read-Only Mode
+            </span>
+        `;
+    } else {
+        modeIndicator.className = 'pf-c-label pf-m-green pf-m-compact';
+        modeIndicator.innerHTML = `
+            <span class="pf-c-label__content">
+                <span class="pf-c-label__icon">
+                    <i class="fas fa-edit" aria-hidden="true"></i>
+                </span>
+                Read-Write Mode
+            </span>
+        `;
+    }
 }

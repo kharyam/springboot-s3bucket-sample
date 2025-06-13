@@ -4,89 +4,197 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S3 Bucket Explorer</title>
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="styles.css">
+    <!-- PatternFly CSS (with specific version) -->
+    <link rel="stylesheet" href="https://unpkg.com/@patternfly/patternfly@4.224.2/patternfly.min.css" crossorigin="anonymous">
+    <!-- PatternFly Addons -->
+    <link rel="stylesheet" href="https://unpkg.com/@patternfly/patternfly@4.224.2/patternfly-addons.min.css" crossorigin="anonymous">
+    <link rel="stylesheet" href="styles.css?v=1">
 </head>
-<body>
-    <div class="container">
-        <header>
-            <h1>S3 Bucket Explorer</h1>
-            <div class="breadcrumb-container">
-                <ol class="breadcrumb" id="breadcrumb">
-                    <li class="breadcrumb-item active" data-path="">Root</li>
-                </ol>
+<body class="pf-m-redhat-font">
+    <div class="pf-c-page" id="page-layout">
+        <!-- Header/Masthead -->
+        <header class="pf-c-masthead pf-m-display-inline">
+            <div class="pf-c-masthead__main">
+                <div class="pf-l-flex pf-m-column">
+                    <h1 class="pf-c-title pf-m-2xl">S3 Bucket Explorer</h1>
+                    <div class="pf-l-flex pf-m-align-items-center pf-m-gap-sm">
+                        <span class="pf-c-title pf-m-md" id="bucket-info">Loading bucket information...</span>
+                        <span class="pf-c-label pf-m-compact" id="mode-indicator">
+                            <span class="pf-c-label__content">
+                                <span class="pf-c-label__icon">
+                                    <i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i>
+                                </span>
+                                Loading...
+                            </span>
+                        </span>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <div class="controls">
-            <div class="button-group">
-                <button id="refresh-btn" class="btn primary"><i class="fas fa-sync-alt"></i> Refresh</button>
-                <button id="upload-btn" class="btn success"><i class="fas fa-upload"></i> Upload</button>
-                <button id="delete-selected-btn" class="btn danger" disabled><i class="fas fa-trash"></i> Delete Selected</button>
-            </div>
-            <div class="search-container">
-                <input type="text" id="search-input" placeholder="Search files...">
-            </div>
-        </div>
-
-        <div class="content">
-            <div class="file-browser">
-                <div class="file-list-header">
-                    <div class="checkbox-cell">
-                        <input type="checkbox" id="select-all">
-                    </div>
-                    <div class="filename-cell">Name</div>
-                    <div class="filesize-cell">Size</div>
-                    <div class="actions-cell">Actions</div>
+        <main class="pf-c-page__main" tabindex="-1">
+            <!-- Breadcrumb -->
+            <section class="pf-c-page__main-breadcrumb pf-m-limit-width">
+                <div class="pf-c-page__main-body">
+                    <nav class="pf-c-breadcrumb" aria-label="breadcrumb">
+                        <ol class="pf-c-breadcrumb__list" id="breadcrumb">
+                            <li class="pf-c-breadcrumb__item active" data-path="">
+                                <span class="pf-c-breadcrumb__item-text">Root</span>
+                            </li>
+                        </ol>
+                    </nav>
                 </div>
-                <div id="file-list" class="file-list">
-                    <!-- Files will be populated here -->
-                    <div class="loader" id="loader">Loading...</div>
+            </section>
+
+            <!-- Toolbar -->
+            <section class="pf-c-page__main-section pf-m-limit-width pf-m-light">
+                <div class="pf-c-page__main-body">
+                    <div class="pf-c-toolbar">
+                        <div class="pf-c-toolbar__content">
+                            <div class="pf-c-toolbar__content-section">
+                                <div class="pf-c-toolbar__group">
+                                    <div class="pf-c-toolbar__item">
+                                        <button id="refresh-btn" class="pf-c-button pf-m-primary">
+                                            <span class="pf-c-button__icon pf-m-start">
+                                                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+                                            </span>
+                                            Refresh
+                                        </button>
+                                    </div>
+                                    <div class="pf-c-toolbar__item">
+                                        <button id="upload-btn" class="pf-c-button pf-m-success">
+                                            <span class="pf-c-button__icon pf-m-start">
+                                                <i class="fas fa-upload" aria-hidden="true"></i>
+                                            </span>
+                                            Upload
+                                        </button>
+                                    </div>
+                                    <div class="pf-c-toolbar__item">
+                                        <button id="delete-selected-btn" class="pf-c-button pf-m-danger" disabled>
+                                            <span class="pf-c-button__icon pf-m-start">
+                                                <i class="fas fa-trash" aria-hidden="true"></i>
+                                            </span>
+                                            Delete Selected
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="pf-c-toolbar__item pf-m-search-filter">
+                                    <div class="pf-c-input-group">
+                                        <input type="text" id="search-input" class="pf-c-form-control" placeholder="Search files..." aria-label="Search files">
+                                        <button class="pf-c-button pf-m-control" type="button" aria-label="Search">
+                                            <i class="fas fa-search" aria-hidden="true"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Content -->
+            <section class="pf-c-page__main-section pf-m-limit-width">
+                <div class="pf-c-page__main-body">
+                    <div class="pf-c-card">
+                        <div class="pf-c-card__body">
+                            <div class="file-browser">
+                                <table class="pf-c-table pf-m-compact pf-m-grid-md" role="grid" aria-label="File listing">
+                                    <thead>
+                                        <tr role="row">
+                                            <th class="pf-c-table__check" role="columnheader">
+                                                <input type="checkbox" id="select-all" aria-label="Select all files">
+                                            </th>
+                                            <th role="columnheader" scope="col">Name</th>
+                                            <th role="columnheader" scope="col">Size</th>
+                                            <th role="columnheader" scope="col">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="file-list" role="rowgroup">
+                                        <!-- Files will be populated here -->
+                                        <tr>
+                                            <td colspan="4">
+                                                <div class="pf-l-bullseye">
+                                                    <div class="pf-c-spinner" role="progressbar" aria-label="Loading files">
+                                                        <span class="pf-c-spinner__clipper"></span>
+                                                        <span class="pf-c-spinner__lead-ball"></span>
+                                                        <span class="pf-c-spinner__tail-ball"></span>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Preview Modal -->
+    <div id="preview-modal" class="pf-c-modal-box" role="dialog" aria-modal="true" aria-labelledby="preview-title" style="display: none;">
+        <div class="pf-c-modal-box__header">
+            <h1 class="pf-c-modal-box__title pf-m-2xl" id="preview-title">File Preview</h1>
+            <button class="pf-c-button pf-m-plain close" type="button" aria-label="Close dialog">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="pf-c-modal-box__body">
+            <div id="preview-container" class="pf-c-content"></div>
+        </div>
+    </div>
+
+    <!-- Upload Modal -->
+    <div id="upload-modal" class="pf-c-modal-box" role="dialog" aria-modal="true" aria-labelledby="upload-title" style="display: none;">
+        <div class="pf-c-modal-box__header">
+            <h1 class="pf-c-modal-box__title pf-m-2xl" id="upload-title">Upload Files</h1>
+            <button class="pf-c-button pf-m-plain close" type="button" aria-label="Close dialog">
+                <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+        </div>
+        <div class="pf-c-modal-box__body">
+            <form id="upload-form" class="pf-c-form" enctype="multipart/form-data">
+                <div class="pf-c-form__group">
+                    <label class="pf-c-form__label" for="file-input">
+                        <span class="pf-c-form__label-text">Select Files</span>
+                        <span class="pf-c-form__label-required" aria-hidden="true">*</span>
+                    </label>
+                    <input class="pf-c-form-control" type="file" id="file-input" name="file" required>
+                </div>
+                <div class="pf-c-form__group">
+                    <label class="pf-c-form__label" for="custom-key">
+                        <span class="pf-c-form__label-text">Custom Key (optional)</span>
+                    </label>
+                    <input class="pf-c-form-control" type="text" id="custom-key" name="custom-key" placeholder="Leave blank to use filename">
+                    <div class="pf-c-form__helper-text">
+                        Current path: <span id="current-path-display"></span>
+                    </div>
+                </div>
+                <div class="pf-c-form__group pf-m-action">
+                    <button type="submit" class="pf-c-button pf-m-primary">Upload</button>
+                </div>
+            </form>
+            <div id="upload-progress" style="display: none; margin-top: 1rem;">
+                <div class="pf-c-progress" id="progress-bar">
+                    <div class="pf-c-progress__description" id="progress-description">
+                        Uploading...
+                    </div>
+                    <div class="pf-c-progress__status" aria-hidden="true">
+                        <span class="pf-c-progress__measure" id="progress-percentage">0%</span>
+                    </div>
+                    <div class="pf-c-progress__bar" aria-label="Progress bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-describedby="progress-description">
+                        <div class="pf-c-progress__indicator" style="width: 0%;"></div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-
-    <div id="preview-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="preview-title">File Preview</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div id="preview-container"></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="upload-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Upload Files</h2>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="upload-form" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label for="file-input">Select Files</label>
-                        <input type="file" id="file-input" name="file" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="custom-key">Custom Key (optional)</label>
-                        <input type="text" id="custom-key" name="custom-key" placeholder="Leave blank to use filename">
-                        <small>Current path: <span id="current-path-display"></span></small>
-                    </div>
-                    <div class="form-actions">
-                        <button type="submit" class="btn success">Upload</button>
-                    </div>
-                </form>
-                <div id="upload-progress" class="progress-bar-container" style="display: none;">
-                    <div class="progress-bar"></div>
-                    <div class="progress-text">0%</div>
-                </div>
-            </div>
-        </div>
-    </div>
+    
+    <!-- Modal backdrop -->
+    <div class="pf-c-backdrop" style="display: none;"></div>
 
     <script src="app.js"></script>
 </body>
