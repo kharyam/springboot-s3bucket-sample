@@ -2,9 +2,11 @@ package com.example.bucketlister;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -84,6 +86,35 @@ public class BucketController {
         } catch (Exception e) {
             logger.error("Error downloading file: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body(("Error downloading file: " + e.getMessage()).getBytes());
+        }
+    }
+
+    @PutMapping("/bucket/update/**")
+    public ResponseEntity<String> updateFile(HttpServletRequest request, @RequestBody String content) {
+        String path = request.getRequestURI();
+        String key = path.substring(path.indexOf("/bucket/update/") + "/bucket/update/".length());
+        try {
+            logger.info("Received file update request for key: {}", key);
+            
+            // URL decode the key in case it was double-encoded
+            String decodedKey = java.net.URLDecoder.decode(key, "UTF-8");
+            logger.debug("Decoded key: {}", decodedKey);
+            
+            // Determine content type based on file extension
+            String contentType = determineContentType(decodedKey);
+            
+            // Convert content string to byte array
+            byte[] fileContent = content.getBytes();
+            
+            // Upload to S3 (overwriting the existing file)
+            s3Service.uploadFile(decodedKey, fileContent, contentType);
+            
+            logger.info("Updated file successfully with key: {}", key);
+            return ResponseEntity.ok("File updated successfully: " + key);
+        } catch (Exception e) {
+            logger.error("Error updating file: {}", e.getMessage(), e);
+            return ResponseEntity.status(500)
+                    .body("Error updating file: " + e.getMessage());
         }
     }
 

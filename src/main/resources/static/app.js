@@ -25,6 +25,9 @@ let appConfig = {
 document.addEventListener('DOMContentLoaded', async () => {
     log('DOM content loaded, initializing app');
     
+    // Apply saved theme preference
+    applySavedTheme();
+    
     // Fetch application config first
     try {
         const response = await fetch('/api/config');
@@ -127,6 +130,15 @@ function setupEventListeners() {
             if (backdrop) backdrop.style.display = 'none';
         });
     });
+    
+    // Add event listener for dark mode toggle
+    const darkModeBtn = document.getElementById('dark-mode-btn');
+    if (darkModeBtn) {
+        darkModeBtn.addEventListener('click', toggleDarkMode);
+        log('Dark mode button event listener attached');
+    } else {
+        log('Dark mode button not found');
+    }
     
     log('Event listeners set up');
 }
@@ -530,6 +542,20 @@ function addFileItemEventListeners() {
             navigateToFolder(folderKey);
         });
     });
+    
+    // File names - make text files clickable for preview
+    document.querySelectorAll('.file-name').forEach(file => {
+        file.addEventListener('click', (e) => {
+            const fileItem = e.target.closest('tr');
+            const key = fileItem.dataset.key;
+            const fileName = e.target.textContent;
+            
+            // Only preview if it's a previewable file
+            if (isPreviewable(fileName)) {
+                previewFile(key);
+            }
+        });
+    });
 
     // Download buttons
     document.querySelectorAll('.download-btn').forEach(btn => {
@@ -666,11 +692,25 @@ async function previewFile(key) {
     const backdrop = document.querySelector('.pf-c-backdrop');
     const previewContainer = document.getElementById('preview-container');
     const previewTitle = document.getElementById('preview-title');
+    const editFileBtn = document.getElementById('edit-file-btn');
+    const previewActions = document.getElementById('preview-actions');
+    const editActions = document.getElementById('edit-actions');
+    const editContainer = document.getElementById('edit-container');
+    
+    // Store the current file key for edit operations
+    previewModal.dataset.currentKey = key;
 
     if (!previewModal || !previewContainer || !previewTitle) {
         console.error('Preview elements not found');
         return;
     }
+    
+    // Reset UI state
+    if (previewActions) previewActions.style.display = 'flex';
+    if (editActions) editActions.style.display = 'none';
+    if (editContainer) editContainer.style.display = 'none';
+    if (previewContainer) previewContainer.style.display = 'block';
+    if (editFileBtn) editFileBtn.style.display = 'none';
 
     try {
         // Show loading in preview container
@@ -714,12 +754,24 @@ async function previewFile(key) {
             log('Trying to preview as text');
             try {
                 const text = await response.text();
+                
+                // Store the original text for editing
+                previewModal.dataset.originalContent = text;
 
                 if (text.length > 500000) {
                     // If file is too large, show only the beginning
                     previewContainer.innerHTML = `<pre>${escapeHtml(text.substring(0, 500000))}...\n\n[File truncated, too large to display completely]</pre>`;
                 } else {
                     previewContainer.innerHTML = `<pre>${escapeHtml(text)}</pre>`;
+                    
+                    // Show edit button if not in read-only mode and file is text-based
+                    if (!appConfig.readOnlyMode && isTextFile(key)) {
+                        const editFileBtn = document.getElementById('edit-file-btn');
+                        if (editFileBtn) {
+                            editFileBtn.style.display = 'block';
+                            editFileBtn.onclick = () => switchToEditMode(text);
+                        }
+                    }
                 }
 
                 log('Text preview successful');
@@ -933,4 +985,241 @@ function updateModeIndicator() {
             </span>
         `;
     }
+}
+
+// Apply saved theme preference on load
+function applySavedTheme() {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'dark') {
+        // Apply dark mode to body
+        document.body.classList.add('pf-m-dark');
+        
+        // Apply dark mode to all PatternFly container elements
+        // This ensures the dark theme is properly applied throughout the UI
+        setTimeout(() => {
+            document.querySelectorAll('.pf-c-page, .pf-c-page__main, .pf-c-page__main-section, .pf-c-card, .pf-c-table')
+                .forEach(el => el.classList.add('pf-m-dark'));
+            log('Applied dark mode to all container elements');
+        }, 100); // Small delay to ensure elements are in the DOM
+        
+        updateDarkModeButton(true);
+    } else {
+        updateDarkModeButton(false);
+    }
+}
+
+// Toggle dark mode
+function toggleDarkMode() {
+    log('Dark mode toggle clicked');
+    
+    // Get current state
+    const isDarkMode = document.body.classList.contains('pf-m-dark');
+    
+    // Toggle the state
+    if (isDarkMode) {
+        // Remove dark mode class from all relevant elements
+        document.body.classList.remove('pf-m-dark');
+        
+        // Remove from all PatternFly container elements
+        document.querySelectorAll('.pf-c-page, .pf-c-page__main, .pf-c-page__main-section, .pf-c-card, .pf-c-table')
+            .forEach(el => el.classList.remove('pf-m-dark'));
+        
+        localStorage.setItem('theme', 'light');
+        updateDarkModeButton(false);
+        log('Switched to light mode');
+    } else {
+        // Add dark mode class to all relevant elements
+        document.body.classList.add('pf-m-dark');
+        
+        // Add to all PatternFly container elements
+        document.querySelectorAll('.pf-c-page, .pf-c-page__main, .pf-c-page__main-section, .pf-c-card, .pf-c-table')
+            .forEach(el => el.classList.add('pf-m-dark'));
+        
+        localStorage.setItem('theme', 'dark');
+        updateDarkModeButton(true);
+        log('Switched to dark mode');
+    }
+    
+    // Show notification for visual feedback
+    showNotification(isDarkMode ? 'Light mode activated' : 'Dark mode activated', 'info');
+}
+
+// Update dark mode button appearance
+function updateDarkModeButton(isDarkMode) {
+    const darkModeBtn = document.getElementById('dark-mode-btn');
+    if (!darkModeBtn) return;
+    
+    if (isDarkMode) {
+        darkModeBtn.innerHTML = `
+            <span class="pf-c-button__icon pf-m-start">
+                <i class="fas fa-sun" aria-hidden="true"></i>
+            </span>
+            Light Mode
+        `;
+    } else {
+        darkModeBtn.innerHTML = `
+            <span class="pf-c-button__icon pf-m-start">
+                <i class="fas fa-moon" aria-hidden="true"></i>
+            </span>
+            Dark Mode
+        `;
+    }
+}
+
+// Check if a file is text-based and can be edited
+function isTextFile(filename) {
+    if (!filename) return false;
+
+    const extension = filename.split('.').pop().toLowerCase();
+    const textExtensions = [
+        'txt', 'md', 'csv', 'json', 'xml', 'html', 'css', 'js', 'ts',
+        'jsx', 'tsx', 'yml', 'yaml', 'ini', 'conf', 'cfg', 'log',
+        'sh', 'bash', 'py', 'java', 'c', 'cpp', 'h', 'hpp', 'cs',
+        'php', 'rb', 'pl', 'sql', 'go'
+    ];
+
+    return textExtensions.includes(extension);
+}
+
+// Switch to edit mode
+function switchToEditMode(content) {
+    const previewContainer = document.getElementById('preview-container');
+    const editContainer = document.getElementById('edit-container');
+    const fileEditor = document.getElementById('file-editor');
+    const previewActions = document.getElementById('preview-actions');
+    const editActions = document.getElementById('edit-actions');
+    
+    if (previewContainer) previewContainer.style.display = 'none';
+    if (editContainer) editContainer.style.display = 'block';
+    if (previewActions) previewActions.style.display = 'none';
+    if (editActions) editActions.style.display = 'flex';
+    
+    if (fileEditor) {
+        fileEditor.value = content;
+        fileEditor.focus();
+    }
+    
+    // Set up event listeners for edit actions
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    const saveFileBtn = document.getElementById('save-file-btn');
+    
+    if (cancelEditBtn) {
+        cancelEditBtn.onclick = cancelEdit;
+    }
+    
+    if (saveFileBtn) {
+        saveFileBtn.onclick = saveFile;
+    }
+}
+
+// Cancel edit and return to preview mode
+function cancelEdit() {
+    const previewContainer = document.getElementById('preview-container');
+    const editContainer = document.getElementById('edit-container');
+    const previewActions = document.getElementById('preview-actions');
+    const editActions = document.getElementById('edit-actions');
+    
+    if (previewContainer) previewContainer.style.display = 'block';
+    if (editContainer) editContainer.style.display = 'none';
+    if (previewActions) previewActions.style.display = 'flex';
+    if (editActions) editActions.style.display = 'none';
+}
+
+// Save the edited file
+async function saveFile() {
+    const previewModal = document.getElementById('preview-modal');
+    const fileEditor = document.getElementById('file-editor');
+    const saveFileBtn = document.getElementById('save-file-btn');
+    const cancelEditBtn = document.getElementById('cancel-edit-btn');
+    
+    if (!previewModal || !fileEditor) {
+        console.error('Required elements not found');
+        return;
+    }
+    
+    const key = previewModal.dataset.currentKey;
+    const content = fileEditor.value;
+    
+    if (!key) {
+        console.error('No file key found');
+        return;
+    }
+    
+    log('Saving file:', key);
+    
+    // Disable buttons during save
+    if (saveFileBtn) saveFileBtn.disabled = true;
+    if (cancelEditBtn) cancelEditBtn.disabled = true;
+    
+    try {
+        const response = await fetch(`/bucket/update/${key}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'text/plain'
+            },
+            body: content
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Failed to save file: ${response.status} ${response.statusText}`);
+        }
+        
+        // Update the original content
+        previewModal.dataset.originalContent = content;
+        
+        // Update the preview
+        const previewContainer = document.getElementById('preview-container');
+        if (previewContainer) {
+            previewContainer.innerHTML = `<pre>${escapeHtml(content)}</pre>`;
+        }
+        
+        // Switch back to preview mode
+        cancelEdit();
+        
+        // Show success notification
+        showNotification('File saved successfully', 'success');
+        
+    } catch (error) {
+        console.error('Error saving file:', error);
+        showNotification(`Error saving file: ${error.message}`, 'danger');
+    } finally {
+        // Re-enable buttons
+        if (saveFileBtn) saveFileBtn.disabled = false;
+        if (cancelEditBtn) cancelEditBtn.disabled = false;
+    }
+}
+
+// Show a notification
+function showNotification(message, type = 'info') {
+    // Create notification element if it doesn't exist
+    let notification = document.getElementById('notification');
+    if (!notification) {
+        notification = document.createElement('div');
+        notification.id = 'notification';
+        notification.className = 'pf-c-alert pf-m-' + type;
+        notification.style.position = 'fixed';
+        notification.style.bottom = '20px';
+        notification.style.right = '20px';
+        notification.style.zIndex = '1000';
+        notification.style.maxWidth = '400px';
+        document.body.appendChild(notification);
+    } else {
+        notification.className = 'pf-c-alert pf-m-' + type;
+    }
+    
+    // Set notification content
+    notification.innerHTML = `
+        <div class="pf-c-alert__icon">
+            <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'danger' ? 'fa-exclamation-circle' : 'fa-info-circle'}" aria-hidden="true"></i>
+        </div>
+        <h4 class="pf-c-alert__title">${message}</h4>
+    `;
+    
+    // Show notification
+    notification.style.display = 'block';
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
 }

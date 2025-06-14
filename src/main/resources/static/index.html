@@ -32,6 +32,14 @@
                     </div>
                 </div>
             </div>
+            <div class="pf-c-masthead__content">
+                <button id="dark-mode-btn" class="pf-c-button pf-m-secondary">
+                    <span class="pf-c-button__icon pf-m-start">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
+                    </span>
+                    Toggle Dark Mode
+                </button>
+            </div>
         </header>
 
         <main class="pf-c-page__main" tabindex="-1">
@@ -144,6 +152,33 @@
         </div>
         <div class="pf-c-modal-box__body">
             <div id="preview-container" class="pf-c-content"></div>
+            <div id="edit-container" class="pf-c-content" style="display: none;">
+                <textarea id="file-editor" class="pf-c-form-control" rows="20"></textarea>
+            </div>
+        </div>
+        <div class="pf-c-modal-box__footer">
+            <div id="preview-actions" class="pf-l-flex pf-m-justify-content-flex-end pf-m-gap-sm">
+                <button id="edit-file-btn" class="pf-c-button pf-m-primary" style="display: none;">
+                    <span class="pf-c-button__icon pf-m-start">
+                        <i class="fas fa-edit" aria-hidden="true"></i>
+                    </span>
+                    Edit
+                </button>
+            </div>
+            <div id="edit-actions" class="pf-l-flex pf-m-justify-content-flex-end pf-m-gap-sm" style="display: none;">
+                <button id="cancel-edit-btn" class="pf-c-button pf-m-secondary">
+                    <span class="pf-c-button__icon pf-m-start">
+                        <i class="fas fa-times" aria-hidden="true"></i>
+                    </span>
+                    Cancel
+                </button>
+                <button id="save-file-btn" class="pf-c-button pf-m-primary">
+                    <span class="pf-c-button__icon pf-m-start">
+                        <i class="fas fa-save" aria-hidden="true"></i>
+                    </span>
+                    Save
+                </button>
+            </div>
         </div>
     </div>
 

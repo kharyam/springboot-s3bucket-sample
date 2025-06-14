@@ -3,6 +3,46 @@
 /* Base styles to ensure PatternFly works correctly */
 :root {
     --pf-global--BackgroundColor--100: #fff;
+    --pf-global--BackgroundColor--200: #f0f0f0;
+    --pf-global--Color--100: #151515;
+    --pf-global--Color--200: #6a6e73;
+    --pf-global--BorderColor--100: #d2d2d2;
+    --pf-global--primary-color--100: #0066cc;
+    --pf-global--link--Color: #0066cc;
+    --pf-global--link--Color--hover: #004080;
+    --pf-global--danger-color--100: #c9190b;
+}
+
+/* Dark mode variables */
+body.pf-m-dark {
+    --pf-global--BackgroundColor--100: #151515;
+    --pf-global--BackgroundColor--200: #212427;
+    --pf-global--Color--100: #ffffff;
+    --pf-global--Color--200: #d2d2d2;
+    --pf-global--BorderColor--100: #4f5255;
+    --pf-global--primary-color--100: #2b9af3;
+    --pf-global--link--Color: #2b9af3;
+    --pf-global--link--Color--hover: #73bcf7;
+    --pf-global--danger-color--100: #ff5c5c;
+}
+
+/* Apply dark mode to PatternFly page elements */
+body.pf-m-dark .pf-c-page {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-page__main {
+    background-color: var(--pf-global--BackgroundColor--100);
+}
+
+body.pf-m-dark .pf-c-page__main-section {
+    background-color: var(--pf-global--BackgroundColor--100);
+}
+
+body.pf-m-dark .pf-c-page__main-body {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
 }
 
 html, body {
@@ -13,6 +53,7 @@ html, body {
 
 body {
     background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
 }
 
 /* File browser customizations */
@@ -43,6 +84,165 @@ body {
 /* Selected row styling */
 tr.selected {
     background-color: var(--pf-global--palette--blue-50);
+}
+
+/* Dark mode specific overrides */
+body.pf-m-dark tr.selected {
+    background-color: rgba(0, 102, 204, 0.2);
+}
+
+/* Table styling for dark mode */
+body.pf-m-dark .pf-c-table {
+    --pf-c-table--BorderColor: var(--pf-global--BorderColor--100);
+    --pf-c-table--cell--Color: var(--pf-global--Color--100);
+    --pf-c-table--BackgroundColor: var(--pf-global--BackgroundColor--100);
+    --pf-c-table--tr--BackgroundColor: var(--pf-global--BackgroundColor--100);
+    --pf-c-table--tr--even--BackgroundColor: #2c2c2c; /* Darker but still readable */
+    --pf-c-table--thead--cell--BackgroundColor: #1a1a1a; /* Dark header */
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-table thead {
+    background-color: #1a1a1a;
+}
+
+body.pf-m-dark .pf-c-table thead th {
+    background-color: #1a1a1a;
+    color: #ffffff;
+    border-bottom-color: var(--pf-global--BorderColor--100);
+}
+
+body.pf-m-dark .pf-c-table tr {
+    background-color: #2c2c2c;
+    color: #ffffff;
+    border-bottom-color: var(--pf-global--BorderColor--100);
+}
+
+/* Removed alternating row color to make all rows dark with light text */
+
+body.pf-m-dark .pf-c-table td,
+body.pf-m-dark .pf-c-table th {
+    color: #ffffff;
+    border-color: var(--pf-global--BorderColor--100);
+}
+
+/* Ensure text in table cells is visible */
+body.pf-m-dark .pf-c-table .file-name,
+body.pf-m-dark .pf-c-table .folder-name {
+    color: #ffffff;
+}
+
+body.pf-m-dark .pf-c-card {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+    border-color: var(--pf-global--BorderColor--100);
+}
+
+body.pf-m-dark .pf-c-card__body {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-content {
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-modal-box {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-form-control {
+    background-color: var(--pf-global--BackgroundColor--200);
+    color: var(--pf-global--Color--100);
+    border-color: var(--pf-global--BorderColor--100);
+}
+
+body.pf-m-dark .folder-icon {
+    color: #f0ab00;
+}
+
+body.pf-m-dark .pf-c-button.pf-m-plain {
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-button.pf-m-secondary {
+    background-color: #4f5255;
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-button.pf-m-primary {
+    background-color: #0066cc;
+    color: #ffffff;
+}
+
+body.pf-m-dark .pf-c-button.pf-m-danger {
+    background-color: #c9190b;
+    color: #ffffff;
+}
+
+/* Disabled button styling in dark mode */
+body.pf-m-dark .pf-c-button:disabled,
+body.pf-m-dark .pf-c-button.pf-m-disabled {
+    background-color: #4f5255;
+    color: #8a8d90;
+    opacity: 0.5;
+    cursor: not-allowed;
+    border-color: transparent;
+}
+
+body.pf-m-dark .pf-c-button.pf-m-primary:disabled,
+body.pf-m-dark .pf-c-button.pf-m-primary.pf-m-disabled {
+    background-color: #06c;
+    color: #ffffff;
+    opacity: 0.4;
+}
+
+body.pf-m-dark .pf-c-button.pf-m-danger:disabled,
+body.pf-m-dark .pf-c-button.pf-m-danger.pf-m-disabled {
+    background-color: #c9190b;
+    color: #ffffff;
+    opacity: 0.4;
+}
+
+/* Additional dark mode overrides for other components */
+body.pf-m-dark .pf-c-toolbar {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-form-control {
+    background-color: var(--pf-global--BackgroundColor--200);
+    color: var(--pf-global--Color--100);
+    border-color: var(--pf-global--BorderColor--100);
+}
+
+body.pf-m-dark .pf-c-title {
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-masthead {
+    background-color: var(--pf-global--BackgroundColor--200);
+    color: var(--pf-global--Color--100);
+    border-bottom-color: var(--pf-global--BorderColor--100);
+}
+
+body.pf-m-dark .pf-c-breadcrumb__link {
+    color: var(--pf-global--link--Color);
+}
+
+body.pf-m-dark .pf-c-breadcrumb__item-text {
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-empty-state {
+    background-color: var(--pf-global--BackgroundColor--100);
+    color: var(--pf-global--Color--100);
+}
+
+body.pf-m-dark .pf-c-empty-state__icon {
+    color: var(--pf-global--Color--200);
 }
 
 /* Empty state styling */
@@ -96,6 +296,7 @@ tr.selected {
 
 #preview-container pre {
     background-color: var(--pf-global--BackgroundColor--200);
+    color: var(--pf-global--Color--100);
     padding: 1rem;
     border-radius: 4px;
     white-space: pre-wrap;
@@ -128,4 +329,19 @@ tr.selected {
 
 .action-btn.delete:hover {
     background-color: var(--pf-global--palette--red-50);
+}
+
+/* Make download and view icons white in dark mode */
+body.pf-m-dark .action-btn:not(.delete) i {
+    color: #ffffff;
+}
+
+/* Make trash icon red in dark mode */
+body.pf-m-dark .action-btn.delete i {
+    color: var(--pf-global--danger-color--100);
+}
+
+/* Make text editor text white in dark mode */
+body.pf-m-dark #file-editor {
+    color: #ffffff;
 }
