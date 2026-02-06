@@ -1,48 +1,84 @@
-/* Custom styles to complement PatternFly */
+/* ============================================
+   S3 Bucket Explorer — Modern Design System
+   ============================================ */
 
-/* Base styles to ensure PatternFly works correctly */
+/* --- Design Tokens (Light) --- */
 :root {
-    --pf-global--BackgroundColor--100: #fff;
-    --pf-global--BackgroundColor--200: #f0f0f0;
-    --pf-global--Color--100: #151515;
-    --pf-global--Color--200: #6a6e73;
-    --pf-global--BorderColor--100: #d2d2d2;
-    --pf-global--primary-color--100: #0066cc;
-    --pf-global--link--Color: #0066cc;
-    --pf-global--link--Color--hover: #004080;
-    --pf-global--danger-color--100: #c9190b;
+    --color-bg: #fafafa;
+    --color-surface: #ffffff;
+    --color-surface-elevated: #ffffff;
+    --color-surface-hover: #f5f5f5;
+    --color-border: #e5e5e5;
+    --color-border-subtle: #f0f0f0;
+    --color-text-primary: #0a0a0a;
+    --color-text-secondary: #525252;
+    --color-text-tertiary: #a3a3a3;
+    --color-accent: #4f46e5;
+    --color-accent-hover: #4338ca;
+    --color-accent-subtle: rgba(79, 70, 229, 0.08);
+    --color-success: #16a34a;
+    --color-success-subtle: rgba(22, 163, 74, 0.08);
+    --color-danger: #dc2626;
+    --color-danger-subtle: rgba(220, 38, 38, 0.08);
+    --color-warning: #ea580c;
+    --color-warning-subtle: rgba(234, 88, 12, 0.08);
+    --color-info: #2563eb;
+    --color-info-subtle: rgba(37, 99, 235, 0.08);
+    --color-backdrop: rgba(0, 0, 0, 0.4);
+    --color-selected: rgba(79, 70, 229, 0.06);
+    --color-folder: #f59e0b;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.1);
+    --radius-sm: 6px;
+    --radius-md: 10px;
+    --radius-lg: 14px;
+    --radius-xl: 20px;
+    --radius-full: 9999px;
+    --transition-fast: 150ms ease;
+    --transition-normal: 200ms ease;
+    --transition-slow: 300ms ease;
+    --header-height: 64px;
+    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-/* Dark mode variables */
-body.pf-m-dark {
-    --pf-global--BackgroundColor--100: #151515;
-    --pf-global--BackgroundColor--200: #212427;
-    --pf-global--Color--100: #ffffff;
-    --pf-global--Color--200: #d2d2d2;
-    --pf-global--BorderColor--100: #4f5255;
-    --pf-global--primary-color--100: #2b9af3;
-    --pf-global--link--Color: #2b9af3;
-    --pf-global--link--Color--hover: #73bcf7;
-    --pf-global--danger-color--100: #ff5c5c;
+/* --- Design Tokens (Dark) --- */
+body.dark-mode {
+    --color-bg: #0a0a0a;
+    --color-surface: #111111;
+    --color-surface-elevated: #1a1a1a;
+    --color-surface-hover: #1f1f1f;
+    --color-border: #262626;
+    --color-border-subtle: #1a1a1a;
+    --color-text-primary: #fafafa;
+    --color-text-secondary: #a3a3a3;
+    --color-text-tertiary: #525252;
+    --color-accent: #818cf8;
+    --color-accent-hover: #6366f1;
+    --color-accent-subtle: rgba(129, 140, 248, 0.1);
+    --color-success: #22c55e;
+    --color-success-subtle: rgba(34, 197, 94, 0.1);
+    --color-danger: #ef4444;
+    --color-danger-subtle: rgba(239, 68, 68, 0.1);
+    --color-warning: #f97316;
+    --color-warning-subtle: rgba(249, 115, 22, 0.1);
+    --color-info: #60a5fa;
+    --color-info-subtle: rgba(96, 165, 250, 0.1);
+    --color-backdrop: rgba(0, 0, 0, 0.6);
+    --color-selected: rgba(129, 140, 248, 0.08);
+    --color-folder: #fbbf24;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.3);
+    --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.4);
+    --shadow-xl: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
-/* Apply dark mode to PatternFly page elements */
-body.pf-m-dark .pf-c-page {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-page__main {
-    background-color: var(--pf-global--BackgroundColor--100);
-}
-
-body.pf-m-dark .pf-c-page__main-section {
-    background-color: var(--pf-global--BackgroundColor--100);
-}
-
-body.pf-m-dark .pf-c-page__main-body {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
+/* --- Base Reset --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
 html, body {
@@ -52,241 +88,846 @@ html, body {
 }
 
 body {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
+    font-family: var(--font-sans);
+    background-color: var(--color-bg);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    transition: background-color var(--transition-slow), color var(--transition-slow);
 }
 
-/* File browser customizations */
+/* --- Theme Transition --- */
+body, body * {
+    transition-property: background-color, color, border-color, box-shadow, opacity;
+    transition-duration: 0ms;
+    transition-timing-function: ease;
+}
+
+body.theme-transitioning,
+body.theme-transitioning * {
+    transition-duration: 300ms !important;
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--header-height);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+}
+
+body.dark-mode .app-header {
+    background: rgba(17, 17, 17, 0.8);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.header-left h1 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    color: var(--color-text-primary);
+}
+
+.header-meta {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bucket-label {
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+    font-weight: 400;
+}
+
+/* Mode badge */
+.mode-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.mode-badge.read-write {
+    background: var(--color-success-subtle);
+    color: var(--color-success);
+}
+
+.mode-badge.read-only {
+    background: var(--color-warning-subtle);
+    color: var(--color-warning);
+}
+
+.mode-badge i {
+    font-size: 0.5625rem;
+}
+
+/* Dark mode toggle button */
+.theme-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    font-size: 0.9375rem;
+}
+
+.theme-toggle:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+    border-color: var(--color-text-tertiary);
+}
+
+/* ============================================
+   BREADCRUMBS
+   ============================================ */
+.breadcrumb-bar {
+    padding: 12px 24px;
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* PF Shim: breadcrumb classes used in app.js */
+.pf-c-breadcrumb__list {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-wrap: wrap;
+}
+
+.pf-c-breadcrumb__item {
+    display: flex;
+    align-items: center;
+    font-size: 0.8125rem;
+}
+
+.pf-c-breadcrumb__item:not(:last-child)::after {
+    content: '/';
+    margin-left: 6px;
+    color: var(--color-text-tertiary);
+    font-weight: 300;
+}
+
+.pf-c-breadcrumb__link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    padding: 2px 6px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+}
+
+.pf-c-breadcrumb__link:hover {
+    color: var(--color-accent);
+    background: var(--color-accent-subtle);
+}
+
+.pf-c-breadcrumb__item-text {
+    color: var(--color-text-primary);
+    font-weight: 500;
+    padding: 2px 6px;
+}
+
+/* ============================================
+   TOOLBAR
+   ============================================ */
+.toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 24px;
+    flex-wrap: wrap;
+}
+
+.toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.toolbar-search {
+    position: relative;
+}
+
+.toolbar-search .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-tertiary);
+    font-size: 0.8125rem;
+    pointer-events: none;
+}
+
+.toolbar-search input {
+    height: 36px;
+    width: 240px;
+    padding: 0 12px 0 34px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-full);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.toolbar-search input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+.toolbar-search input:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+/* Base button styles */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    outline: none;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn:active {
+    transform: translateY(0);
+}
+
+.btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.btn i {
+    font-size: 0.75rem;
+}
+
+.btn-primary {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+}
+
+.btn-success {
+    background: var(--color-success);
+    color: #fff;
+}
+
+.btn-success:hover:not(:disabled) {
+    background: #15803d;
+}
+
+body.dark-mode .btn-success:hover:not(:disabled) {
+    background: #16a34a;
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+body.dark-mode .btn-danger:hover:not(:disabled) {
+    background: #dc2626;
+}
+
+.btn-secondary {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text-tertiary);
+}
+
+/* PF Shim: button classes used in app.js template literals */
+.pf-c-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    font-family: var(--font-sans);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    white-space: nowrap;
+    outline: none;
+}
+
+.pf-c-button:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.pf-c-button:active {
+    transform: translateY(0);
+}
+
+.pf-c-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.pf-c-button.pf-m-primary {
+    background: var(--color-accent);
+    color: #fff;
+}
+
+.pf-c-button.pf-m-primary:hover:not(:disabled) {
+    background: var(--color-accent-hover);
+}
+
+.pf-c-button.pf-m-secondary {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+}
+
+.pf-c-button.pf-m-secondary:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-text-tertiary);
+}
+
+.pf-c-button.pf-m-danger {
+    background: var(--color-danger);
+    color: #fff;
+}
+
+.pf-c-button.pf-m-danger:hover:not(:disabled) {
+    background: #b91c1c;
+}
+
+.pf-c-button.pf-m-success {
+    background: var(--color-success);
+    color: #fff;
+}
+
+.pf-c-button.pf-m-success:hover:not(:disabled) {
+    background: #15803d;
+}
+
+.pf-c-button.pf-m-plain {
+    background: transparent;
+    color: var(--color-text-secondary);
+    border: none;
+    padding: 0 6px;
+    height: auto;
+}
+
+.pf-c-button.pf-m-plain:hover {
+    color: var(--color-text-primary);
+    transform: none;
+    box-shadow: none;
+}
+
+.pf-c-button__icon {
+    display: inline-flex;
+    font-size: 0.75rem;
+}
+
+/* ============================================
+   CONTENT CARD
+   ============================================ */
+.content-area {
+    padding: 0 24px 24px;
+}
+
+.content-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+}
+
+/* ============================================
+   TABLE
+   ============================================ */
 .file-browser {
     width: 100%;
 }
 
-/* File and folder name styles */
+.file-browser table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.file-browser thead th {
+    padding: 10px 16px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+    text-align: left;
+    border-bottom: 1px solid var(--color-border);
+    background: var(--color-surface);
+}
+
+.file-browser tbody tr {
+    border-bottom: 1px solid var(--color-border-subtle);
+    transition: background-color var(--transition-fast);
+    animation: fadeInUp 300ms ease both;
+}
+
+.file-browser tbody tr:last-child {
+    border-bottom: none;
+}
+
+.file-browser tbody tr:hover {
+    background-color: var(--color-surface-hover);
+}
+
+.file-browser tbody td {
+    padding: 10px 16px;
+    font-size: 0.875rem;
+    color: var(--color-text-primary);
+    vertical-align: middle;
+}
+
+/* Checkbox column */
+.file-browser thead th:first-child,
+.file-browser tbody td:first-child,
+.pf-c-table__check {
+    width: 40px;
+    text-align: center;
+    padding-left: 12px;
+    padding-right: 4px;
+}
+
+/* Checkbox styling */
+.file-browser input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--color-accent);
+    cursor: pointer;
+}
+
+/* Selected row */
+tr.selected {
+    background-color: var(--color-selected) !important;
+}
+
+/* File/folder names */
 .file-name {
     cursor: pointer;
+    color: var(--color-text-primary);
+    transition: color var(--transition-fast);
+}
+
+.file-name:hover {
+    color: var(--color-accent);
 }
 
 .folder-name {
     cursor: pointer;
     font-weight: 500;
+    color: var(--color-text-primary);
+    transition: color var(--transition-fast);
 }
 
-/* Icon styles */
+.folder-name:hover {
+    color: var(--color-accent);
+}
+
+/* Icons */
 .file-icon {
-    margin-right: 0.75rem;
-    font-size: 1.2rem;
+    margin-right: 10px;
+    font-size: 1.05rem;
+    color: var(--color-text-tertiary);
 }
 
 .folder-icon {
-    color: var(--pf-global--palette--gold-400);
+    color: var(--color-folder) !important;
 }
 
-/* Selected row styling */
-tr.selected {
-    background-color: var(--pf-global--palette--blue-50);
+/* Action buttons in table */
+.action-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-size: 0.875rem;
 }
 
-/* Dark mode specific overrides */
-body.pf-m-dark tr.selected {
-    background-color: rgba(0, 102, 204, 0.2);
+.action-btn:hover {
+    color: var(--color-accent);
+    background: var(--color-accent-subtle);
 }
 
-/* Table styling for dark mode */
-body.pf-m-dark .pf-c-table {
-    --pf-c-table--BorderColor: var(--pf-global--BorderColor--100);
-    --pf-c-table--cell--Color: var(--pf-global--Color--100);
-    --pf-c-table--BackgroundColor: var(--pf-global--BackgroundColor--100);
-    --pf-c-table--tr--BackgroundColor: var(--pf-global--BackgroundColor--100);
-    --pf-c-table--tr--even--BackgroundColor: #2c2c2c; /* Darker but still readable */
-    --pf-c-table--thead--cell--BackgroundColor: #1a1a1a; /* Dark header */
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
+.action-btn.delete {
+    color: var(--color-text-tertiary);
 }
 
-body.pf-m-dark .pf-c-table thead {
-    background-color: #1a1a1a;
+.action-btn.delete:hover {
+    color: var(--color-danger);
+    background: var(--color-danger-subtle);
 }
 
-body.pf-m-dark .pf-c-table thead th {
-    background-color: #1a1a1a;
-    color: #ffffff;
-    border-bottom-color: var(--pf-global--BorderColor--100);
+/* ============================================
+   PF LAYOUT SHIMS (used in app.js templates)
+   ============================================ */
+.pf-l-flex {
+    display: flex;
 }
 
-body.pf-m-dark .pf-c-table tr {
-    background-color: #2c2c2c;
-    color: #ffffff;
-    border-bottom-color: var(--pf-global--BorderColor--100);
+.pf-m-align-items-center {
+    align-items: center;
 }
 
-/* Removed alternating row color to make all rows dark with light text */
-
-body.pf-m-dark .pf-c-table td,
-body.pf-m-dark .pf-c-table th {
-    color: #ffffff;
-    border-color: var(--pf-global--BorderColor--100);
+.pf-m-justify-content-flex-end {
+    justify-content: flex-end;
 }
 
-/* Ensure text in table cells is visible */
-body.pf-m-dark .pf-c-table .file-name,
-body.pf-m-dark .pf-c-table .folder-name {
-    color: #ffffff;
+.pf-m-gap-sm {
+    gap: 4px;
 }
 
-body.pf-m-dark .pf-c-card {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
-    border-color: var(--pf-global--BorderColor--100);
+.pf-l-bullseye {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 16px;
 }
 
-body.pf-m-dark .pf-c-card__body {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
+/* ============================================
+   SPINNER (PF Shim)
+   ============================================ */
+.pf-c-spinner {
+    display: inline-block;
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--color-border);
+    border-top-color: var(--color-accent);
+    border-radius: 50%;
+    animation: spin 800ms linear infinite;
 }
 
-body.pf-m-dark .pf-c-content {
-    color: var(--pf-global--Color--100);
+.pf-c-spinner__clipper,
+.pf-c-spinner__lead-ball,
+.pf-c-spinner__tail-ball {
+    display: none;
 }
 
-body.pf-m-dark .pf-c-modal-box {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
+/* ============================================
+   EMPTY STATE (PF Shim)
+   ============================================ */
+.pf-c-empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
 }
 
-body.pf-m-dark .pf-c-form-control {
-    background-color: var(--pf-global--BackgroundColor--200);
-    color: var(--pf-global--Color--100);
-    border-color: var(--pf-global--BorderColor--100);
-}
-
-body.pf-m-dark .folder-icon {
-    color: #f0ab00;
-}
-
-body.pf-m-dark .pf-c-button.pf-m-plain {
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-button.pf-m-secondary {
-    background-color: #4f5255;
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-button.pf-m-primary {
-    background-color: #0066cc;
-    color: #ffffff;
-}
-
-body.pf-m-dark .pf-c-button.pf-m-danger {
-    background-color: #c9190b;
-    color: #ffffff;
-}
-
-/* Disabled button styling in dark mode */
-body.pf-m-dark .pf-c-button:disabled,
-body.pf-m-dark .pf-c-button.pf-m-disabled {
-    background-color: #4f5255;
-    color: #8a8d90;
-    opacity: 0.5;
-    cursor: not-allowed;
-    border-color: transparent;
-}
-
-body.pf-m-dark .pf-c-button.pf-m-primary:disabled,
-body.pf-m-dark .pf-c-button.pf-m-primary.pf-m-disabled {
-    background-color: #06c;
-    color: #ffffff;
-    opacity: 0.4;
-}
-
-body.pf-m-dark .pf-c-button.pf-m-danger:disabled,
-body.pf-m-dark .pf-c-button.pf-m-danger.pf-m-disabled {
-    background-color: #c9190b;
-    color: #ffffff;
-    opacity: 0.4;
-}
-
-/* Additional dark mode overrides for other components */
-body.pf-m-dark .pf-c-toolbar {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-form-control {
-    background-color: var(--pf-global--BackgroundColor--200);
-    color: var(--pf-global--Color--100);
-    border-color: var(--pf-global--BorderColor--100);
-}
-
-body.pf-m-dark .pf-c-title {
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-masthead {
-    background-color: var(--pf-global--BackgroundColor--200);
-    color: var(--pf-global--Color--100);
-    border-bottom-color: var(--pf-global--BorderColor--100);
-}
-
-body.pf-m-dark .pf-c-breadcrumb__link {
-    color: var(--pf-global--link--Color);
-}
-
-body.pf-m-dark .pf-c-breadcrumb__item-text {
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-empty-state {
-    background-color: var(--pf-global--BackgroundColor--100);
-    color: var(--pf-global--Color--100);
-}
-
-body.pf-m-dark .pf-c-empty-state__icon {
-    color: var(--pf-global--Color--200);
-}
-
-/* Empty state styling */
-.empty-message {
+.pf-c-empty-state__content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    color: var(--pf-global--Color--200);
     text-align: center;
+    gap: 12px;
 }
 
-.empty-message i {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    opacity: 0.6;
+.pf-c-empty-state__icon {
+    font-size: 2.5rem;
+    color: var(--color-text-tertiary);
+    opacity: 0.5;
 }
 
-/* Modal customizations */
-#preview-modal, #upload-modal {
+.pf-c-empty-state__body {
+    color: var(--color-text-secondary);
+    font-size: 0.875rem;
+}
+
+.pf-c-empty-state__primary {
+    margin-top: 8px;
+}
+
+/* PF Title shim */
+.pf-c-title {
+    color: var(--color-text-primary);
+    font-weight: 600;
+}
+
+.pf-c-title.pf-m-lg {
+    font-size: 1rem;
+}
+
+.pf-c-title.pf-m-2xl {
+    font-size: 1.125rem;
+}
+
+/* ============================================
+   MODALS
+   ============================================ */
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background-color: var(--color-backdrop);
+    z-index: 1000;
+    animation: fadeIn 200ms ease;
+}
+
+.modal {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     z-index: 1001;
-    max-width: 800px;
-    width: 80%;
-    display: none; /* Hide by default */
-    background-color: var(--pf-global--BackgroundColor--100);
-    box-shadow: var(--pf-global--BoxShadow--lg);
+    width: min(90vw, 640px);
+    max-height: 85vh;
+    display: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    animation: modalSlideUp 350ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.pf-c-backdrop {
-    position: fixed;
-    top: 0;
-    left: 0;
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.modal-header h1 {
+    font-size: 1.0625rem;
+    font-weight: 600;
+    color: var(--color-text-primary);
+}
+
+.modal-close {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+    transition: all var(--transition-fast);
+    font-size: 1rem;
+}
+
+.modal-close:hover {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+}
+
+.modal-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    max-height: calc(85vh - 140px);
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ============================================
+   FORMS
+   ============================================ */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: var(--color-text-primary);
+    margin-bottom: 6px;
+}
+
+.form-label .required {
+    color: var(--color-danger);
+    margin-left: 2px;
+}
+
+.form-control {
     width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    outline: none;
+    transition: all var(--transition-fast);
 }
 
-/* Preview container */
+.form-control:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+.form-control::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+textarea.form-control {
+    height: auto;
+    padding: 10px 12px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+/* PF form-control shim (used in app.js modals) */
+.pf-c-form-control {
+    width: 100%;
+    height: 38px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    outline: none;
+    transition: all var(--transition-fast);
+}
+
+.pf-c-form-control:focus {
+    border-color: var(--color-accent);
+    box-shadow: 0 0 0 3px var(--color-accent-subtle);
+}
+
+.pf-c-form-control::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+textarea.pf-c-form-control {
+    height: auto;
+    padding: 10px 12px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
+.form-helper {
+    font-size: 0.75rem;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+}
+
+input[type="file"].form-control,
+input[type="file"].pf-c-form-control {
+    height: auto;
+    padding: 8px 12px;
+}
+
+/* ============================================
+   PROGRESS BAR
+   ============================================ */
+.progress-container {
+    margin-top: 16px;
+}
+
+.progress-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.8125rem;
+    color: var(--color-text-secondary);
+}
+
+.progress-track {
+    width: 100%;
+    height: 6px;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--color-accent);
+    border-radius: var(--radius-full);
+    transition: width 300ms ease;
+}
+
+/* ============================================
+   PREVIEW
+   ============================================ */
 #preview-container {
     width: 100%;
     min-height: 200px;
@@ -295,53 +936,214 @@ body.pf-m-dark .pf-c-empty-state__icon {
 }
 
 #preview-container pre {
-    background-color: var(--pf-global--BackgroundColor--200);
-    color: var(--pf-global--Color--100);
-    padding: 1rem;
-    border-radius: 4px;
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+    padding: 16px;
+    border-radius: var(--radius-md);
     white-space: pre-wrap;
+    word-break: break-word;
     overflow-x: auto;
+    font-size: 0.8125rem;
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    line-height: 1.6;
 }
 
 #preview-container img {
     max-width: 100%;
     height: auto;
+    border-radius: var(--radius-md);
 }
 
-/* Action button styles */
-.action-btn {
-    background: none;
-    border: none;
-    color: var(--pf-global--primary-color--100);
-    cursor: pointer;
-    padding: 0.25rem;
-    border-radius: 3px;
-    transition: background-color 0.2s;
+#file-editor {
+    font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+    font-size: 0.8125rem;
+    line-height: 1.6;
+    min-height: 300px;
 }
 
-.action-btn:hover {
-    background-color: var(--pf-global--palette--blue-50);
+/* ============================================
+   NOTIFICATIONS
+   ============================================ */
+.pf-c-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 18px;
+    border-radius: var(--radius-md);
+    font-size: 0.8125rem;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    animation: slideInRight 350ms cubic-bezier(0.16, 1, 0.3, 1);
+    max-width: 380px;
 }
 
-.action-btn.delete {
-    color: var(--pf-global--danger-color--100);
+.pf-c-alert__icon {
+    flex-shrink: 0;
+    font-size: 1rem;
+    line-height: 1;
+    margin-top: 1px;
 }
 
-.action-btn.delete:hover {
-    background-color: var(--pf-global--palette--red-50);
+.pf-c-alert__title {
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1.4;
 }
 
-/* Make download and view icons white in dark mode */
-body.pf-m-dark .action-btn:not(.delete) i {
-    color: #ffffff;
+.pf-c-alert.pf-m-success .pf-c-alert__icon {
+    color: var(--color-success);
 }
 
-/* Make trash icon red in dark mode */
-body.pf-m-dark .action-btn.delete i {
-    color: var(--pf-global--danger-color--100);
+.pf-c-alert.pf-m-danger .pf-c-alert__icon {
+    color: var(--color-danger);
 }
 
-/* Make text editor text white in dark mode */
-body.pf-m-dark #file-editor {
-    color: #ffffff;
+.pf-c-alert.pf-m-info .pf-c-alert__icon {
+    color: var(--color-info);
+}
+
+.pf-c-alert.pf-m-warning .pf-c-alert__icon {
+    color: var(--color-warning);
+}
+
+/* ============================================
+   PF LABEL SHIM (mode indicator in app.js)
+   ============================================ */
+.pf-c-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+.pf-c-label.pf-m-green {
+    background: var(--color-success-subtle);
+    color: var(--color-success);
+}
+
+.pf-c-label.pf-m-orange {
+    background: var(--color-warning-subtle);
+    color: var(--color-warning);
+}
+
+.pf-c-label__content {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.pf-c-label__icon {
+    display: inline-flex;
+    font-size: 0.5625rem;
+}
+
+.pf-m-compact {
+    /* consumed but no extra styling needed */
+}
+
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes modalSlideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -46%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0 16px;
+    }
+
+    .header-meta {
+        display: none;
+    }
+
+    .toolbar {
+        padding: 12px 16px;
+    }
+
+    .toolbar-search input {
+        width: 100%;
+    }
+
+    .toolbar-search {
+        width: 100%;
+    }
+
+    .content-area {
+        padding: 0 16px 16px;
+    }
+
+    .modal {
+        width: calc(100vw - 32px);
+    }
+}
+
+/* ============================================
+   SCROLLBAR
+   ============================================ */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-text-tertiary);
 }

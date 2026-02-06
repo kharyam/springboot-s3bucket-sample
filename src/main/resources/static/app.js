@@ -120,11 +120,8 @@ function setupEventListeners() {
         closeBtn.addEventListener('click', () => {
             const previewModal = document.getElementById('preview-modal');
             const uploadModal = document.getElementById('upload-modal');
-            const backdrop = document.querySelector('.pf-c-backdrop');
-            
-            // Remove modal class from body
-            document.body.classList.remove('pf-m-in-modal');
-            
+            const backdrop = document.querySelector('.modal-backdrop');
+
             if (previewModal) previewModal.style.display = 'none';
             if (uploadModal) uploadModal.style.display = 'none';
             if (backdrop) backdrop.style.display = 'none';
@@ -214,25 +211,26 @@ async function loadFiles() {
 // Open upload modal
 function openUploadModal() {
     const uploadModal = document.getElementById('upload-modal');
-    const backdrop = document.querySelector('.pf-c-backdrop');
+    const backdrop = document.querySelector('.modal-backdrop');
     const currentPathDisplay = document.getElementById('current-path-display');
     const uploadForm = document.getElementById('upload-form');
-    
+
     if (currentPathDisplay) {
         currentPathDisplay.textContent = state.currentPath || '/';
     }
-    
+
     if (uploadForm) {
         uploadForm.reset();
     }
-    
-    // Add pf-m-in-modal class to body to prevent scrolling
-    document.body.classList.add('pf-m-in-modal');
-    
+
     if (uploadModal) {
+        // Re-trigger animation
+        uploadModal.style.animation = 'none';
+        uploadModal.offsetHeight; // force reflow
+        uploadModal.style.animation = '';
         uploadModal.style.display = 'block';
     }
-    
+
     if (backdrop) {
         backdrop.style.display = 'block';
     }
@@ -245,11 +243,11 @@ function handleFormUpload(e) {
     const fileInput = document.getElementById('file-input');
     const customKeyInput = document.getElementById('custom-key');
     const uploadProgress = document.getElementById('upload-progress');
-    const progressBar = document.querySelector('.pf-c-progress__indicator');
+    const progressBar = document.querySelector('.progress-fill');
     const progressText = document.getElementById('progress-percentage');
     const uploadModal = document.getElementById('upload-modal');
-    const backdrop = document.querySelector('.pf-c-backdrop');
-    
+    const backdrop = document.querySelector('.modal-backdrop');
+
     if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
         alert('Please select a file to upload');
         return;
@@ -277,7 +275,7 @@ function handleFormUpload(e) {
         if (progressText) progressText.textContent = '0%';
         
         // Update ARIA value
-        const progressBarElement = document.querySelector('.pf-c-progress__bar');
+        const progressBarElement = document.querySelector('.progress-track');
         if (progressBarElement) {
             progressBarElement.setAttribute('aria-valuenow', '0');
         }
@@ -307,15 +305,12 @@ function handleFormUpload(e) {
         if (progressText) progressText.textContent = '100%';
         
         // Update ARIA value
-        const progressBarElement = document.querySelector('.pf-c-progress__bar');
+        const progressBarElement = document.querySelector('.progress-track');
         if (progressBarElement) {
             progressBarElement.setAttribute('aria-valuenow', '100');
         }
         
         setTimeout(() => {
-            // Remove modal class from body
-            document.body.classList.remove('pf-m-in-modal');
-            
             if (uploadModal) uploadModal.style.display = 'none';
             if (backdrop) backdrop.style.display = 'none';
             loadFiles(); // Refresh the file list
@@ -466,10 +461,11 @@ function renderFiles() {
         return;
     }
     
-    const html = filteredFiles.map(file => {
+    const html = filteredFiles.map((file, index) => {
         const isSelected = state.selectedFiles.has(file.key);
+        const delay = index * 30;
         return `
-            <tr class="${isSelected ? 'selected' : ''}" data-key="${file.key}">
+            <tr class="${isSelected ? 'selected' : ''}" data-key="${file.key}" style="animation-delay: ${delay}ms">
                 <td class="pf-c-table__check">
                     ${!file.isFolder && !appConfig.readOnlyMode ? 
                       `<input type="checkbox" class="file-checkbox" ${isSelected ? 'checked' : ''}>` : 
@@ -689,7 +685,7 @@ function downloadFile(key) {
 async function previewFile(key) {
     log('Previewing file:', key);
     const previewModal = document.getElementById('preview-modal');
-    const backdrop = document.querySelector('.pf-c-backdrop');
+    const backdrop = document.querySelector('.modal-backdrop');
     const previewContainer = document.getElementById('preview-container');
     const previewTitle = document.getElementById('preview-title');
     const editFileBtn = document.getElementById('edit-file-btn');
@@ -723,9 +719,10 @@ async function previewFile(key) {
                 </div>
             </div>
         `;
-        // Add pf-m-in-modal class to body to prevent scrolling
-        document.body.classList.add('pf-m-in-modal');
-        
+        // Re-trigger modal animation
+        previewModal.style.animation = 'none';
+        previewModal.offsetHeight; // force reflow
+        previewModal.style.animation = '';
         previewModal.style.display = 'block';
         if (backdrop) backdrop.style.display = 'block';
 
@@ -963,26 +960,18 @@ function updateBucketInfo() {
 function updateModeIndicator() {
     const modeIndicator = document.getElementById('mode-indicator');
     if (!modeIndicator) return;
-    
+
     if (appConfig.readOnlyMode) {
-        modeIndicator.className = 'pf-c-label pf-m-orange pf-m-compact';
+        modeIndicator.className = 'mode-badge read-only';
         modeIndicator.innerHTML = `
-            <span class="pf-c-label__content">
-                <span class="pf-c-label__icon">
-                    <i class="fas fa-lock" aria-hidden="true"></i>
-                </span>
-                Read-Only Mode
-            </span>
+            <i class="fas fa-lock" aria-hidden="true"></i>
+            Read-Only
         `;
     } else {
-        modeIndicator.className = 'pf-c-label pf-m-green pf-m-compact';
+        modeIndicator.className = 'mode-badge read-write';
         modeIndicator.innerHTML = `
-            <span class="pf-c-label__content">
-                <span class="pf-c-label__icon">
-                    <i class="fas fa-edit" aria-hidden="true"></i>
-                </span>
-                Read-Write Mode
-            </span>
+            <i class="fas fa-edit" aria-hidden="true"></i>
+            Read-Write
         `;
     }
 }
@@ -991,17 +980,7 @@ function updateModeIndicator() {
 function applySavedTheme() {
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme === 'dark') {
-        // Apply dark mode to body
-        document.body.classList.add('pf-m-dark');
-        
-        // Apply dark mode to all PatternFly container elements
-        // This ensures the dark theme is properly applied throughout the UI
-        setTimeout(() => {
-            document.querySelectorAll('.pf-c-page, .pf-c-page__main, .pf-c-page__main-section, .pf-c-card, .pf-c-table')
-                .forEach(el => el.classList.add('pf-m-dark'));
-            log('Applied dark mode to all container elements');
-        }, 100); // Small delay to ensure elements are in the DOM
-        
+        document.body.classList.add('dark-mode');
         updateDarkModeButton(true);
     } else {
         updateDarkModeButton(false);
@@ -1011,35 +990,31 @@ function applySavedTheme() {
 // Toggle dark mode
 function toggleDarkMode() {
     log('Dark mode toggle clicked');
-    
+
+    // Enable theme transition
+    document.body.classList.add('theme-transitioning');
+
     // Get current state
-    const isDarkMode = document.body.classList.contains('pf-m-dark');
-    
+    const isDarkMode = document.body.classList.contains('dark-mode');
+
     // Toggle the state
     if (isDarkMode) {
-        // Remove dark mode class from all relevant elements
-        document.body.classList.remove('pf-m-dark');
-        
-        // Remove from all PatternFly container elements
-        document.querySelectorAll('.pf-c-page, .pf-c-page__main, .pf-c-page__main-section, .pf-c-card, .pf-c-table')
-            .forEach(el => el.classList.remove('pf-m-dark'));
-        
+        document.body.classList.remove('dark-mode');
         localStorage.setItem('theme', 'light');
         updateDarkModeButton(false);
         log('Switched to light mode');
     } else {
-        // Add dark mode class to all relevant elements
-        document.body.classList.add('pf-m-dark');
-        
-        // Add to all PatternFly container elements
-        document.querySelectorAll('.pf-c-page, .pf-c-page__main, .pf-c-page__main-section, .pf-c-card, .pf-c-table')
-            .forEach(el => el.classList.add('pf-m-dark'));
-        
+        document.body.classList.add('dark-mode');
         localStorage.setItem('theme', 'dark');
         updateDarkModeButton(true);
         log('Switched to dark mode');
     }
-    
+
+    // Remove transition class after animation completes
+    setTimeout(() => {
+        document.body.classList.remove('theme-transitioning');
+    }, 350);
+
     // Show notification for visual feedback
     showNotification(isDarkMode ? 'Light mode activated' : 'Dark mode activated', 'info');
 }
@@ -1048,22 +1023,11 @@ function toggleDarkMode() {
 function updateDarkModeButton(isDarkMode) {
     const darkModeBtn = document.getElementById('dark-mode-btn');
     if (!darkModeBtn) return;
-    
-    if (isDarkMode) {
-        darkModeBtn.innerHTML = `
-            <span class="pf-c-button__icon pf-m-start">
-                <i class="fas fa-sun" aria-hidden="true"></i>
-            </span>
-            Light Mode
-        `;
-    } else {
-        darkModeBtn.innerHTML = `
-            <span class="pf-c-button__icon pf-m-start">
-                <i class="fas fa-moon" aria-hidden="true"></i>
-            </span>
-            Dark Mode
-        `;
-    }
+
+    darkModeBtn.innerHTML = isDarkMode
+        ? '<i class="fas fa-sun" aria-hidden="true"></i>'
+        : '<i class="fas fa-moon" aria-hidden="true"></i>';
+    darkModeBtn.title = isDarkMode ? 'Switch to light mode' : 'Switch to dark mode';
 }
 
 // Check if a file is text-based and can be edited
