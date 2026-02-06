@@ -12,16 +12,10 @@ import org.slf4j.LoggerFactory;
 public class BucketListerApplication implements CommandLineRunner {
     private static final Logger logger = LoggerFactory.getLogger(BucketListerApplication.class);
 
-    @Value("${bucket.access.key}")
-    private String accessKey;
-  
-    @Value("${bucket.secret.key}")
-    private String secretKey;
-  
-    @Value("${bucket.host}")
+    @Value("${bucket.host:}")
     private String endpoint;
-  
-    @Value("${bucket.name}")
+
+    @Value("${bucket.name:}")
     private String bucketName;
 
     public static void main(String[] args) {
@@ -31,7 +25,10 @@ public class BucketListerApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        logger.info("BucketLister Application initialized with endpoint: {}, bucket: {}", endpoint, bucketName);
-        // For security reasons, don't log the access key or secret key
+        if (endpoint != null && !endpoint.isEmpty()) {
+            logger.info("BucketLister Application initialized with endpoint: {}, bucket: {}", endpoint, bucketName);
+        } else {
+            logger.info("BucketLister Application initialized in DEMO MODE (no S3 bucket configured)");
+        }
     }
 }

@@ -30,24 +30,30 @@ import org.slf4j.LoggerFactory;
 public class S3Service {
     private static final Logger logger = LoggerFactory.getLogger(S3Service.class);
 
-    @Value("${bucket.access.key}")
+    @Value("${bucket.access.key:}")
     private String accessKey;
-  
-    @Value("${bucket.secret.key}")
+
+    @Value("${bucket.secret.key:}")
     private String secretKey;
-  
-    @Value("${bucket.host}")
+
+    @Value("${bucket.host:}")
     private String endpoint;
-  
-    @Value("${bucket.name}")
+
+    @Value("${bucket.name:}")
     private String bucketName;
 
     private S3Client s3Client;
+    private boolean initialized = false;
 
     @PostConstruct
     public void init() {
+        if (endpoint == null || endpoint.isEmpty()) {
+            logger.info("S3 endpoint not configured — skipping S3 client initialization (demo mode)");
+            return;
+        }
+
         logger.info("Initializing S3 client with endpoint: {}", endpoint);
-        
+
         var creds = AwsBasicCredentials.create(accessKey, secretKey);
         String region = "us-east-1"; // Not applicable for ocp, default it.
         this.s3Client = S3Client.builder()
@@ -56,11 +62,23 @@ public class S3Service {
                 .credentialsProvider(StaticCredentialsProvider.create(creds))
                 .forcePathStyle(true) // Required for OpenShift ODF
                 .build();
-        
+
+        initialized = true;
         logger.info("S3 client initialized successfully");
     }
 
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    private void requireInitialized() {
+        if (!initialized) {
+            throw new IllegalStateException("S3 client is not initialized — bucket configuration is missing");
+        }
+    }
+
     public List<String> listBucketContents() {
+        requireInitialized();
         logger.debug("Listing contents of bucket: {}", bucketName);
         ArrayList<String> result = new ArrayList<String>();
 
@@ -70,7 +88,7 @@ public class S3Service {
                     .build();
 
             var response = s3Client.listObjectsV2(request);
-            
+
             for (S3Object object : response.contents()) {
                 result.add(object.key());
             }
@@ -84,8 +102,9 @@ public class S3Service {
     }
 
     public byte[] downloadFile(String key) throws Exception {
+        requireInitialized();
         logger.debug("Downloading file with key: {}", key);
-        
+
         // Build the GetObjectRequest to fetch the file
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
@@ -95,7 +114,7 @@ public class S3Service {
         try {
             // Get the object from the S3 bucket as InputStream
             ResponseInputStream<GetObjectResponse> s3ObjectInputStream = s3Client.getObject(getObjectRequest);
-            
+
             // Read the InputStream into a byte array
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             byte[] buffer = new byte[1024];
@@ -103,10 +122,10 @@ public class S3Service {
             while ((length = s3ObjectInputStream.read(buffer)) > -1) {
                 byteArrayOutputStream.write(buffer, 0, length);
             }
-            
+
             byte[] result = byteArrayOutputStream.toByteArray();
             logger.debug("Successfully downloaded file with key: {}, size: {} bytes", key, result.length);
-            
+
             return result;
         } catch (Exception e) {
             logger.error("Failed to download file with key {}: {}", key, e.getMessage(), e);
@@ -115,9 +134,10 @@ public class S3Service {
     }
 
     public void uploadFile(String key, byte[] fileContent, String contentType) {
-        logger.debug("Uploading file with key: {}, size: {} bytes, content-type: {}", 
+        requireInitialized();
+        logger.debug("Uploading file with key: {}, size: {} bytes, content-type: {}",
                 key, fileContent.length, contentType);
-        
+
         try {
             // Create request
             PutObjectRequest putObjectRequest = PutObjectRequest.builder()
@@ -138,8 +158,9 @@ public class S3Service {
     }
 
     public void deleteFile(String key) {
+        requireInitialized();
         logger.debug("Deleting file with key: {}", key);
-        
+
         try {
             // Create delete request
             DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()

@@ -18,6 +18,7 @@ const state = {
 
 let appConfig = {
     readOnlyMode: false,
+    demoMode: false,
     bucketHost: '',
     bucketName: ''
 };
@@ -38,11 +39,16 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Update bucket info in the header
             updateBucketInfo();
             
+            // Apply demo mode if enabled
+            if (appConfig.demoMode) {
+                applyDemoMode();
+            }
+
             // Apply read-only mode if enabled
             if (appConfig.readOnlyMode) {
                 applyReadOnlyMode();
             }
-            
+
             // Update mode indicator
             updateModeIndicator();
         }
@@ -73,6 +79,25 @@ function applyReadOnlyMode() {
     
     // Also update the renderFiles function to not include delete buttons
     // This is done by modifying the original renderFiles function below
+}
+
+function applyDemoMode() {
+    log('Applying demo mode to UI');
+    document.body.classList.add('demo-mode');
+
+    // Inject demo banner before the header
+    const header = document.querySelector('.app-header');
+    if (header) {
+        const banner = document.createElement('div');
+        banner.className = 'demo-banner';
+        banner.innerHTML = `
+            <div class="demo-banner-content">
+                <i class="fas fa-flask" aria-hidden="true"></i>
+                <span><strong>Demo Mode</strong> — Exploring with sample data. No S3 bucket is connected. Changes are temporary.</span>
+            </div>
+        `;
+        header.parentNode.insertBefore(banner, header);
+    }
 }
 
 function setupEventListeners() {
@@ -928,6 +953,7 @@ function isPreviewable(filename) {
     const extension = filename.split('.').pop().toLowerCase();
     const previewableExtensions = [
         'txt', 'csv', 'json', 'xml', 'html', 'css', 'js', 'md',
+        'sh', 'py',
         'jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'
     ];
 
@@ -951,7 +977,11 @@ function formatFileSize(size) {
 // Update bucket info in the header
 function updateBucketInfo() {
     const bucketInfoElement = document.getElementById('bucket-info');
-    if (bucketInfoElement && appConfig.bucketHost && appConfig.bucketName) {
+    if (!bucketInfoElement) return;
+
+    if (appConfig.demoMode) {
+        bucketInfoElement.textContent = 'demo-bucket (sample data)';
+    } else if (appConfig.bucketHost && appConfig.bucketName) {
         bucketInfoElement.textContent = `${appConfig.bucketHost} / ${appConfig.bucketName}`;
     }
 }
@@ -961,7 +991,13 @@ function updateModeIndicator() {
     const modeIndicator = document.getElementById('mode-indicator');
     if (!modeIndicator) return;
 
-    if (appConfig.readOnlyMode) {
+    if (appConfig.demoMode) {
+        modeIndicator.className = 'mode-badge demo';
+        modeIndicator.innerHTML = `
+            <i class="fas fa-flask" aria-hidden="true"></i>
+            Demo
+        `;
+    } else if (appConfig.readOnlyMode) {
         modeIndicator.className = 'mode-badge read-only';
         modeIndicator.innerHTML = `
             <i class="fas fa-lock" aria-hidden="true"></i>
