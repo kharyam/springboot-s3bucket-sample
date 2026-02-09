@@ -1,4 +1,4 @@
-package com.example.bucketlister;
+package com.example.bucketbrowser;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @SpringBootApplication(scanBasePackages = "com.example")
-public class BucketListerApplication implements CommandLineRunner {
-    private static final Logger logger = LoggerFactory.getLogger(BucketListerApplication.class);
+public class BucketBrowserApplication implements CommandLineRunner {
+    private static final Logger logger = LoggerFactory.getLogger(BucketBrowserApplication.class);
 
     @Value("${bucket.host:}")
     private String endpoint;
@@ -19,16 +19,16 @@ public class BucketListerApplication implements CommandLineRunner {
     private String bucketName;
 
     public static void main(String[] args) {
-        logger.info("Starting BucketLister Application");
-        SpringApplication.run(BucketListerApplication.class, args);
+        logger.info("Starting BucketBrowser Application");
+        SpringApplication.run(BucketBrowserApplication.class, args);
     }
 
     @Override
     public void run(String... args) throws Exception {
         if (endpoint != null && !endpoint.isEmpty()) {
-            logger.info("BucketLister Application initialized with endpoint: {}, bucket: {}", endpoint, bucketName);
+            logger.info("BucketBrowser Application initialized with endpoint: {}, bucket: {}", endpoint, bucketName);
         } else {
-            logger.info("BucketLister Application initialized in DEMO MODE (no S3 bucket configured)");
+            logger.info("BucketBrowser Application initialized in DEMO MODE (no S3 bucket configured)");
         }
     }
 }

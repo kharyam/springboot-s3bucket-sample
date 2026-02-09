@@ -1,4 +1,4 @@
-package com.example.bucketlister;
+package com.example.bucketbrowser;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;

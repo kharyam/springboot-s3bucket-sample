@@ -1,4 +1,4 @@
-package com.example.bucketlister;
+package com.example.bucketbrowser;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;

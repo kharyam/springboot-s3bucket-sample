@@ -3,7 +3,7 @@ const DEBUG = true;
 
 function log(...args) {
     if (DEBUG) {
-        console.log('[BucketLister]', ...args);
+        console.log('[BucketBrowser]', ...args);
     }
 }
 
