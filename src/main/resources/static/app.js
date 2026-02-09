@@ -7,6 +7,16 @@ function log(...args) {
     }
 }
 
+// Auth-aware fetch wrapper — redirects to login on 401/403
+async function authenticatedFetch(url, options) {
+    const response = await fetch(url, options);
+    if (response.status === 401 || response.status === 403) {
+        window.location.href = '/login';
+        return response;
+    }
+    return response;
+}
+
 // Set up state and event listeners
 const state = {
     files: [],          // Raw list of files from server
@@ -31,7 +41,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Fetch application config first
     try {
-        const response = await fetch('/api/config');
+        const response = await authenticatedFetch('/api/config');
         if (response.ok) {
             appConfig = await response.json();
             log('Loaded app config:', appConfig);
@@ -161,7 +171,15 @@ function setupEventListeners() {
     } else {
         log('Dark mode button not found');
     }
-    
+
+    // Add event listener for logout button
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            window.location.href = '/logout';
+        });
+    }
+
     log('Event listeners set up');
 }
 
@@ -189,7 +207,7 @@ async function loadFiles() {
     
     try {
         // Fetch files from server
-        const response = await fetch('/bucket/list');
+        const response = await authenticatedFetch('/bucket/list');
         
         if (!response.ok) {
             throw new Error(`Failed to load files: ${response.status} ${response.statusText}`);
@@ -312,7 +330,7 @@ function handleFormUpload(e) {
     formData.append('key', key);
     
     // Upload the file
-    fetch('/bucket/upload', {
+    authenticatedFetch('/bucket/upload', {
         method: 'POST',
         body: formData
     })
@@ -754,7 +772,7 @@ async function previewFile(key) {
         previewTitle.textContent = key.split('/').pop();
 
         log('Fetching file for preview:', key);
-        const response = await fetch(`/bucket/download/${key}`);
+        const response = await authenticatedFetch(`/bucket/download/${key}`);
 
         if (!response.ok) {
             log('Preview fetch failed:', response.status, response.statusText);
@@ -840,7 +858,7 @@ async function deleteFile(key) {
     }
 
     try {
-        const response = await fetch(`/bucket/delete/${key}`, {
+        const response = await authenticatedFetch(`/bucket/delete/${key}`, {
             method: 'DELETE'
         });
 
@@ -870,7 +888,7 @@ async function deleteSelectedFiles() {
     try {
         // Create an array of promises for each file deletion
         const deletePromises = Array.from(state.selectedFiles).map(key =>
-            fetch(`/bucket/delete/${key}`, {
+            authenticatedFetch(`/bucket/delete/${key}`, {
                 method: 'DELETE'
             })
         );
@@ -1152,7 +1170,7 @@ async function saveFile() {
     if (cancelEditBtn) cancelEditBtn.disabled = true;
     
     try {
-        const response = await fetch(`/bucket/update/${key}`, {
+        const response = await authenticatedFetch(`/bucket/update/${key}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'text/plain'

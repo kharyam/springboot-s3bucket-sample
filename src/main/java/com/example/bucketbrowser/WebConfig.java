@@ -11,5 +11,7 @@ public class WebConfig implements WebMvcConfigurer {
     public void addViewControllers(ViewControllerRegistry registry) {
         // Redirect root URL to our index.html
         registry.addViewController("/").setViewName("forward:/index.html");
+        // Serve the custom login page
+        registry.addViewController("/login").setViewName("forward:/login.html");
     }
 }
