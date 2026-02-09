@@ -1015,11 +1015,11 @@ function updateModeIndicator() {
 // Apply saved theme preference on load
 function applySavedTheme() {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme === 'dark') {
+    if (savedTheme === 'light') {
+        updateDarkModeButton(false);
+    } else {
         document.body.classList.add('dark-mode');
         updateDarkModeButton(true);
-    } else {
-        updateDarkModeButton(false);
     }
 }
 
