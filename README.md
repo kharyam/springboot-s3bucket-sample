@@ -1,4 +1,4 @@
-# Bucket Lister
+# S3 Bucket Browser
 
 A Spring Boot application for browsing, managing, and interacting with S3-compatible object storage buckets through both a modern web interface and RESTful API endpoints.
 
